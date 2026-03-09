@@ -1,0 +1,129 @@
+LICENÇA LIVRE COM CITAÇÃO OBRIGATÓRIA
+(Free Use License with Mandatory Citation)
+
+Versão 1.0 — 9 de março de 2026
+
+Copyright (c) 2026  Maxwell Anderson Ielpo Amaral
+Repositório: https://github.com/maxwellamaral/docflow
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+TERMOS E CONDIÇÕES
+
+1. CONCESSÃO DE DIREITOS
+
+   É concedida, gratuitamente, a qualquer pessoa ou organização que obtenha
+   uma cópia deste software e dos arquivos de documentação associados
+   (coletivamente denominados "Software"), permissão para:
+
+   a) usar, copiar, modificar, mesclar, publicar, distribuir, sublicenciar
+      e/ou vender cópias do Software, para fins pessoais, educacionais,
+      acadêmicos ou comerciais;
+
+   b) permitir que terceiros a quem o Software seja fornecido façam o
+      mesmo;
+
+   desde que sejam respeitadas TODAS as condições estabelecidas nesta
+   licença.
+
+2. CONDIÇÃO OBRIGATÓRIA DE ATRIBUIÇÃO E CITAÇÃO
+
+   2.1. ATRIBUIÇÃO EM SOFTWARE E REPOSITÓRIOS
+
+        Em toda redistribuição do Software, parcial ou total, modificada
+        ou não, o seguinte aviso de direitos autorais deve ser mantido
+        de forma visível no código-fonte, na documentação e em qualquer
+        material derivado:
+
+            Copyright (c) 2026  Maxwell Anderson Ielpo Amaral
+            https://github.com/maxwellamaral/docflow
+
+   2.2. CITAÇÃO EM PUBLICAÇÕES ACADÊMICAS E TÉCNICAS
+
+        Qualquer trabalho — incluindo, sem limitação, artigos científicos,
+        teses, dissertações, monografias, relatórios técnicos, posts em
+        blogs técnicos, apresentações em conferências e materiais didáticos
+        — que:
+
+        i)  utilize este Software no todo ou em parte; ou
+        ii) derive funcionalidades, código, arquitetura ou metodologia
+            deste Software; ou
+        iii) produza resultados obtidos com o auxílio deste Software;
+
+        DEVE incluir uma citação bibliográfica ao Software no formato
+        abaixo (ou equivalente no estilo de citação adotado):
+
+        ── BibLaTeX / BibTeX ───────────────────────────────────────────
+
+        @software{amaral2026docflow,
+          author  = {Amaral, Maxwell Anderson Ielpo},
+          title   = {{DocFlow}: Pipeline local de conversão, tradução e
+                     exportação de documentos {PDF} via Docling e Ollama},
+          year    = {2026},
+          version = {0.1.0},
+          url     = {https://github.com/maxwellamaral/docflow}
+        }
+
+        ── ABNT ────────────────────────────────────────────────────────
+
+        AMARAL, Maxwell Anderson Ielpo. DocFlow: pipeline local de
+        conversão, tradução e exportação de documentos PDF via Docling
+        e Ollama. v. 0.1.0. 2026. Disponível em:
+        https://github.com/maxwellamaral/docflow. Acesso em: <data>.
+
+        ── APA 7 ───────────────────────────────────────────────────────
+
+        Amaral, M. A. I. (2026). DocFlow: Pipeline local de conversão,
+        tradução e exportação de documentos PDF via Docling e Ollama
+        (Versão 0.1.0) [Software].
+        https://github.com/maxwellamaral/docflow
+
+        ────────────────────────────────────────────────────────────────
+
+        O arquivo CITATION.bib incluído neste repositório contém as
+        entradas BibLaTeX prontas para uso.
+
+   2.3. INTERFACES DE SOFTWARE E SERVIÇOS
+
+        Se este Software for incorporado a um sistema, produto ou serviço
+        acessível por terceiros (incluindo interfaces web, APIs públicas ou
+        aplicações SaaS), o nome do autor e o endereço do repositório
+        devem estar visíveis na seção de créditos, "Sobre" ou documentação
+        do produto resultante.
+
+3. INCLUSÃO DESTA LICENÇA
+
+   Esta licença, na íntegra, deve acompanhar toda distribuição ou
+   redistribuição do Software, bem como de obras derivadas.
+
+4. ISENÇÃO DE GARANTIAS
+
+   O SOFTWARE É FORNECIDO "NO ESTADO EM QUE SE ENCONTRA" (AS IS), SEM
+   GARANTIA DE QUALQUER NATUREZA, EXPRESSA OU IMPLÍCITA, INCLUINDO, SEM
+   LIMITAÇÃO, AS GARANTIAS IMPLÍCITAS DE COMERCIABILIDADE, ADEQUAÇÃO A
+   UMA FINALIDADE ESPECÍFICA E NÃO INFRAÇÃO.
+
+5. LIMITAÇÃO DE RESPONSABILIDADE
+
+   EM NENHUMA CIRCUNSTÂNCIA O AUTOR OU OS DETENTORES DOS DIREITOS AUTORAIS
+   SERÃO RESPONSÁVEIS POR QUALQUER RECLAMAÇÃO, DANO OU OUTRA RESPONSABI-
+   LIDADE, SEJA EM AÇÃO CONTRATUAL, EXTRACONTRATUAL OU DE OUTRA NATUREZA,
+   DECORRENTE DE, OU EM CONEXÃO COM, O SOFTWARE OU O USO OU OUTRAS
+   NEGOCIAÇÕES NO SOFTWARE.
+
+6. DISPOSIÇÕES GERAIS
+
+   6.1. Caso qualquer disposição desta licença seja considerada inválida ou
+        inexequível, as demais disposições permanecerão em pleno vigor.
+
+   6.2. A inobservância da cláusula de citação obrigatória (Seção 2)
+        implica rescisão automática dos direitos concedidos por esta
+        licença ao infrator, sem prejuízo das demais medidas cabíveis.
+
+   6.3. Esta licença é regida pelas leis da República Federativa do
+        Brasil, sem prejuízo das normas de direito internacional
+        aplicáveis à propriedade intelectual.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Contato do autor: https://github.com/maxwellamaral
