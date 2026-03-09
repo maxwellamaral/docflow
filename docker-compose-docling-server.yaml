@@ -1,0 +1,29 @@
+services:
+  docling-serve:
+    image: quay.io/docling-project/docling-serve-cu128:latest
+    container_name: docling-serve
+    ports:
+      - "5001:5001"
+    environment:
+      # Enable the web UI for testing
+      - DOCLING_SERVE_ENABLE_UI=true
+      # CRITICAL: Required for picture description with external LLM APIs
+      - DOCLING_SERVE_ENABLE_REMOTE_SERVICES=true
+      # Maximum wait time for sync requests (seconds) - increase for large documents
+      - DOCLING_SERVE_MAX_SYNC_WAIT=600
+      # Number of local engine workers
+      - DOCLING_SERVE_ENG_LOC_NUM_WORKERS=2
+      # CPU thread configuration
+      - OMP_NUM_THREADS=4
+      - MKL_NUM_THREADS=4
+      # IMPORTANT: Keep at 1 to avoid "Task Not Found" errors
+      - UVICORN_WORKERS=1
+    restart: unless-stopped
+    # For GPU support with NVIDIA:
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
