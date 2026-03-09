@@ -1,4 +1,8 @@
 """Entrypoint principal do backend DocFlow."""
+import atexit
+import subprocess
+from pathlib import Path
+
 import uvicorn
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
@@ -30,7 +34,19 @@ app.include_router(files_router)
 
 
 def run() -> None:
-    """Inicia o servidor uvicorn. Usado como entrypoint pelo pyproject.toml."""
+    """Inicia o frontend (npm run dev) e o servidor uvicorn simultaneamente."""
+    frontend_dir = Path(__file__).parent.parent / "frontend"
+    fe_proc = subprocess.Popen(["npm", "run", "dev"], cwd=frontend_dir)
+
+    def _cleanup() -> None:
+        fe_proc.terminate()
+        try:
+            fe_proc.wait(timeout=5)
+        except subprocess.TimeoutExpired:
+            fe_proc.kill()
+
+    atexit.register(_cleanup)
+
     uvicorn.run(
         "backend.main:app",
         host=settings.backend_host,
