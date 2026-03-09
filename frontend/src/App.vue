@@ -2,6 +2,7 @@
 import UploadPanel from './components/UploadPanel.vue'
 import PipelineMonitor from './components/PipelineMonitor.vue'
 import DownloadPanel from './components/DownloadPanel.vue'
+import FilesPanel from './components/FilesPanel.vue'
 </script>
 
 <template>
@@ -15,6 +16,7 @@ import DownloadPanel from './components/DownloadPanel.vue'
       <UploadPanel />
       <PipelineMonitor />
       <DownloadPanel />
+      <FilesPanel />
     </main>
   </div>
 </template>

@@ -9,6 +9,7 @@ export default defineConfig({
       '/upload': 'http://localhost:8000',
       '/pipeline': 'http://localhost:8000',
       '/download': 'http://localhost:8000',
+      '/files': 'http://localhost:8000',
     },
   },
 })

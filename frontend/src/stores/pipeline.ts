@@ -19,6 +19,7 @@ export const usePipelineStore = defineStore('pipeline', () => {
   const pipelineError = ref<string | null>(null)
   const isUploading = ref(false)
   const isRunning = ref(false)
+  const uploadSuccessCount = ref(0)
   let ws: WebSocket | null = null
 
   // ── Getters ───────────────────────────────────────────────────────────────
@@ -56,6 +57,7 @@ export const usePipelineStore = defineStore('pipeline', () => {
         await uploadPdf(file)
       }
       pendingFiles.value = []
+      uploadSuccessCount.value++
     } catch (err: unknown) {
       uploadError.value = `Erro no upload: ${(err as Error).message}`
     } finally {
@@ -127,6 +129,7 @@ export const usePipelineStore = defineStore('pipeline', () => {
     pipelineError,
     isUploading,
     isRunning,
+    uploadSuccessCount,
     status,
     progress,
     outputs,

@@ -4,6 +4,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from backend.api.router_download import router as download_router
+from backend.api.router_files import router as files_router
 from backend.api.router_pipeline import router as pipeline_router
 from backend.api.router_upload import router as upload_router
 from backend.core.config import settings
@@ -16,7 +17,7 @@ app = FastAPI(
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173", "http://localhost:3000"],
+    allow_origins=["http://localhost:5173", "http://localhost:5174", "http://localhost:3000"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -25,6 +26,7 @@ app.add_middleware(
 app.include_router(upload_router)
 app.include_router(pipeline_router)
 app.include_router(download_router)
+app.include_router(files_router)
 
 
 def run() -> None:

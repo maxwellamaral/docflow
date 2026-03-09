@@ -74,3 +74,37 @@ export const connectProgressWebSocket = (
 
 export const buildDownloadUrl = (relativePath: string): string =>
   `/download/${relativePath}`
+
+// ── File Management ────────────────────────────────────────────────────────────
+
+export interface FileInfo {
+  name: string
+  path: string
+  size: number
+}
+
+export interface OutputEntry {
+  name: string
+  path: string
+  is_dir: boolean
+  size: number
+  children: OutputEntry[]
+}
+
+export const listInputFiles = (): Promise<{ files: FileInfo[] }> =>
+  api.get('/files/input').then((r) => r.data)
+
+export const deleteInputFile = (filename: string): Promise<void> =>
+  api.delete(`/files/input/${filename}`)
+
+export const viewInputFileUrl = (filename: string): string =>
+  `/files/input/${encodeURIComponent(filename)}`
+
+export const listOutputFiles = (): Promise<{ entries: OutputEntry[] }> =>
+  api.get('/files/output').then((r) => r.data)
+
+export const deleteOutputFile = (filePath: string): Promise<void> =>
+  api.delete(`/files/output/${filePath}`)
+
+export const viewOutputFileUrl = (filePath: string): string =>
+  `/files/output/${filePath}`
