@@ -1,0 +1,136 @@
+# docker-compose.yml — Stack completa do DocFlow
+#
+# Serviços:
+#   ollama          — Inference local com GPU (translategemma:4b)
+#   docling-serve   — Conversão PDF → HTML com GPU
+#   docflow-backend — API FastAPI (porta 8000)
+#   docflow-frontend — Vue.js 3 servido via nginx (porta 8090)
+#
+# Uso:
+#   docker compose up -d          # subir a stack
+#   docker compose logs -f        # acompanhar logs
+#   docker compose down           # parar e remover containers
+#   docker compose down -v        # parar e remover volumes também
+
+name: docflow
+
+services:
+
+  # ── Ollama: inference local com GPU ────────────────────────────────────────
+  ollama:
+    image: ollama/ollama:latest
+    container_name: docflow-ollama
+    volumes:
+      - ollama_data:/root/.ollama
+      - ./docker/ollama/entrypoint.sh:/entrypoint.sh:ro
+    entrypoint: ["/bin/sh", "/entrypoint.sh"]
+    restart: unless-stopped
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
+    healthcheck:
+      # Pronto apenas quando translategemma:4b estiver disponível
+      test: ["CMD-SHELL", "ollama list | grep -q translategemma || exit 1"]
+      interval: 30s
+      timeout: 20s
+      retries: 40           # 40 × 30s = 20 min (tempo suficiente para download)
+      start_period: 120s
+
+  # ── Docling Server: PDF → HTML com GPU ────────────────────────────────────
+  docling-serve:
+    image: quay.io/docling-project/docling-serve-cu128:latest
+    container_name: docflow-docling
+    environment:
+      - DOCLING_SERVE_ENABLE_UI=true
+      - DOCLING_SERVE_ENABLE_REMOTE_SERVICES=true
+      - DOCLING_SERVE_MAX_SYNC_WAIT=600
+      - DOCLING_SERVE_ENG_LOC_NUM_WORKERS=2
+      - OMP_NUM_THREADS=4
+      - MKL_NUM_THREADS=4
+      - UVICORN_WORKERS=1
+    restart: unless-stopped
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
+    healthcheck:
+      test: ["CMD-SHELL", "curl -sf http://localhost:5001/health || exit 1"]
+      interval: 30s
+      timeout: 15s
+      retries: 20
+      start_period: 120s
+
+  # ── DocFlow Backend: FastAPI ────────────────────────────────────────────────
+  docflow-backend:
+    build:
+      context: .
+      dockerfile: docker/backend/Dockerfile
+    container_name: docflow-backend
+    environment:
+      # URLs internas da rede Docker (nomes dos serviços, não localhost)
+      - DOCLING_BASE_URL=http://docling-serve:5001
+      - OLLAMA_BASE_URL=http://ollama:11434
+      - OLLAMA_MODEL=translategemma:4b
+      - OLLAMA_TIMEOUT=600
+      - TARGET_LANGUAGE=Portuguese (Brazil)
+      # Diretórios de dados (montados como volumes)
+      - INPUT_DIR=./input
+      - OUTPUT_DIR=./output
+      - BACKEND_HOST=0.0.0.0
+      - BACKEND_PORT=8000
+    volumes:
+      - docflow_input:/app/input
+      - docflow_output:/app/output
+    depends_on:
+      ollama:
+        condition: service_healthy
+      docling-serve:
+        condition: service_healthy
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "curl -sf http://localhost:8000/docs > /dev/null || exit 1"]
+      interval: 15s
+      timeout: 10s
+      retries: 5
+      start_period: 30s
+
+  # ── DocFlow Frontend: Vue.js 3 + nginx ─────────────────────────────────────
+  docflow-frontend:
+    build:
+      context: .
+      dockerfile: docker/frontend/Dockerfile
+    container_name: docflow-frontend
+    ports:
+      - "8090:80"          # porta 8090 no host → porta 80 no container (nginx)
+    depends_on:
+      docflow-backend:
+        condition: service_healthy
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://127.0.0.1/ > /dev/null || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+
+# ── Volumes persistentes ────────────────────────────────────────────────────
+volumes:
+  ollama_data:
+    driver: local
+    labels:
+      com.docflow.description: "Modelos Ollama (translategemma:4b e outros)"
+  docflow_input:
+    driver: local
+    labels:
+      com.docflow.description: "PDFs de entrada"
+  docflow_output:
+    driver: local
+    labels:
+      com.docflow.description: "Arquivos processados (html, translated, docx, pdf)"

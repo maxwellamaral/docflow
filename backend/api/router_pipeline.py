@@ -3,6 +3,7 @@ from fastapi import APIRouter, BackgroundTasks, HTTPException, WebSocket, WebSoc
 
 from backend.core import pipeline as pipeline_core
 from backend.models.schemas import PipelineJob, PipelineStartResponse, ProgressEvent
+from backend.services.storage_service import StorageService
 
 router = APIRouter(prefix="/pipeline", tags=["pipeline"])
 
@@ -35,7 +36,16 @@ async def start_pipeline(background_tasks: BackgroundTasks) -> PipelineStartResp
 
     Returns:
         Resposta com o job_id criado e mensagem de confirmação.
+
+    Raises:
+        HTTPException 422: Se não houver PDFs em ./input para processar.
     """
+    storage = StorageService()
+    if not storage.list_input_pdfs():
+        raise HTTPException(
+            status_code=422,
+            detail="Nenhum PDF encontrado em ./input. Envie ao menos um arquivo antes de iniciar a pipeline.",
+        )
     job = pipeline_core.create_job()
     background_tasks.add_task(pipeline_core.run_pipeline, job.job_id, _broadcast_progress)
     return PipelineStartResponse(
