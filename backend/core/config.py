@@ -32,6 +32,7 @@ class Settings(BaseSettings):
     ollama_base_url: str = "http://localhost:11434"
     ollama_model: str = "translategemma:4b"
     ollama_timeout: int = 600
+    source_language: str = "English"
     target_language: str = "Portuguese (Brazil)"
 
     # Pastas de trabalho

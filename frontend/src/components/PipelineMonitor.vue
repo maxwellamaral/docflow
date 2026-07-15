@@ -2,6 +2,18 @@
   <section class="panel">
     <h2>⚙️ Pipeline</h2>
 
+    <div class="skip-translation-checkbox" style="margin: 0 0 1rem 0;">
+      <label style="display: inline-flex; align-items: center; cursor: pointer; color: #f8fafc; font-size: 0.9rem;">
+        <input
+          type="checkbox"
+          v-model="store.skipTranslation"
+          :disabled="store.isRunning"
+          style="margin-right: 0.5rem; width: 16px; height: 16px; cursor: pointer;"
+        />
+        Pular tradução (apenas converter e reformatar)
+      </label>
+    </div>
+
     <button
       class="btn btn-primary"
       :disabled="store.isRunning"
@@ -52,10 +64,14 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, onMounted } from 'vue'
 import { usePipelineStore } from '../stores/pipeline'
 
 const store = usePipelineStore()
+
+onMounted(() => {
+  store.loadConfig()
+})
 
 const STATUS_LABELS: Record<string, string> = {
   pending: 'Aguardando',

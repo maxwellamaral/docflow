@@ -139,9 +139,8 @@ def test_pipeline_can_be_cancelled_via_button(page: Page) -> None:
     }""")
 
     # 1. Verifica se o botão de parar/cancelar pipeline está visível na tela
-    cancel_button = page.locator(".btn-danger")
+    cancel_button = page.locator("button:has-text('Parar Pipeline')")
     expect(cancel_button).to_be_visible()
-    expect(cancel_button).to_contain_text("Parar Pipeline")
 
     # 2. Clica no botão de cancelar
     cancel_button.click()
@@ -161,3 +160,42 @@ def test_pipeline_can_be_cancelled_via_button(page: Page) -> None:
     # 4. Verifica se o badge de status reflete "Cancelado" ou similar
     status_badge = page.locator(".status-badge")
     expect(status_badge).to_contain_text("Cancelado")
+
+
+def test_pipeline_skip_translation_checkbox(page: Page) -> None:
+    """Deve verificar o comportamento do checkbox de pular tradução com base nos idiomas e sua integração com a API."""
+    # 1. Configura mock das chamadas de API antes de navegar
+    # Intercepta GET /pipeline/config para retornar idiomas idênticos (deve iniciar marcado!)
+    page.route("**/pipeline/config", lambda route: route.fulfill(
+        status=200,
+        json={"source_language": "Portuguese", "target_language": "Portuguese"}
+    ))
+
+    # Intercepta POST /pipeline/start e captura o payload enviado pelo frontend
+    start_payloads = []
+    def handle_start(route):
+        start_payloads.append(route.request.post_data_json)
+        route.fulfill(
+            status=200,
+            json={"job_id": "job-skip-test", "message": "Pipeline iniciada com sucesso."}
+        )
+    page.route("**/pipeline/start", handle_start)
+
+    page.goto("http://localhost:5173")
+
+    # 2. O checkbox deve estar visível
+    checkbox = page.locator(".panel input[type='checkbox']")
+    expect(checkbox).to_be_visible()
+
+    # 3. Como os idiomas retornados no config mock são iguais, o checkbox deve iniciar MARCADO
+    expect(checkbox).to_be_checked()
+
+    # 4. Inicia o pipeline
+    start_button = page.locator("button:has-text('Iniciar Pipeline')")
+    expect(start_button).to_be_visible()
+    start_button.click()
+
+    # 5. Verifica se o body do POST continha skip_translation = True
+    page.wait_for_timeout(500)  # Pequena folga para a chamada assíncrona resolver
+    assert len(start_payloads) > 0
+    assert start_payloads[0].get("skip_translation") is True

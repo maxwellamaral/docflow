@@ -12,6 +12,15 @@ export interface PipelineStartResponse {
   message: string
 }
 
+export interface PipelineStartRequest {
+  skip_translation?: boolean
+}
+
+export interface PipelineConfig {
+  source_language: string
+  target_language: string
+}
+
 export type PipelineStatus =
   | 'pending'
   | 'converting'
@@ -46,14 +55,17 @@ export const uploadPdf = (file: File): Promise<UploadResponse> => {
   return api.post<UploadResponse>('/upload', form).then((r) => r.data)
 }
 
-export const startPipeline = (): Promise<PipelineStartResponse> =>
-  api.post<PipelineStartResponse>('/pipeline/start').then((r) => r.data)
+export const startPipeline = (req?: PipelineStartRequest): Promise<PipelineStartResponse> =>
+  api.post<PipelineStartResponse>('/pipeline/start', req).then((r) => r.data)
 
 export const getJobStatus = (jobId: string): Promise<PipelineJob> =>
   api.get<PipelineJob>(`/pipeline/status/${jobId}`).then((r) => r.data)
 
 export const cancelPipelineJob = (jobId: string): Promise<void> =>
   api.post<void>(`/pipeline/cancel/${jobId}`).then(() => {})
+
+export const getPipelineConfig = (): Promise<PipelineConfig> =>
+  api.get<PipelineConfig>('/pipeline/config').then((r) => r.data)
 
 export const connectProgressWebSocket = (
   jobId: string,

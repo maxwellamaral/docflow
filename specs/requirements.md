@@ -20,6 +20,15 @@
 9. O sistema deve permitir que o usuário cancele/pare uma pipeline ativa a qualquer momento:
    * A interface do usuário no frontend deve expor um botão visível para parar ou cancelar a execução da pipeline atual.
    * O backend deve interromper cooperativamente a execução de novas etapas no pipeline do job correspondente e definir seu status final como `cancelled` (cancelado).
+10. O sistema deve permitir configurar o processamento de IA (Ollama) no painel do Pipeline:
+    * A interface do usuário deve oferecer um checkbox "Traduzir Documentos" (ativo por padrão se os idiomas do `.env` forem diferentes) e um checkbox "Refinar OCR com IA" (ativo por padrão para pós-processamento de ruídos e correção gramatical).
+    * Se ambos estiverem desativados, o backend deve ignorar completamente a chamada ao Ollama para acelerar o processamento.
+11. O sistema deve realizar a extração automática de figuras e imagens (pictures) reais presentes nos PDFs:
+    * O backend deve instruir o Docling a habilitar a extração estruturada de imagens durante o OCR.
+    * As figuras extraídas devem ser salvas como arquivos de imagem (PNG) na pasta `./output/<data>/assets/`.
+    * O HTML gerado deve referenciar essas imagens localmente via tags `<img>` e o gerador de arquivos Word (.docx) e PDF final deve embuti-las de volta no documento.
+12. O sistema deve suportar um modo de Refinamento de OCR por IA (Ollama):
+    * Caso o checkbox de refinar esteja ativo, o backend deve invocar o modelo local do Ollama com um prompt de sistema especializado em corrigir erros de acentuação, caracteres inválidos/espúrios, quebras de linhas órfãs e concatenações semânticas ruins, mantendo o idioma original e citações científicas intactas.
 
 
 ## Requisitos Não Funcionais

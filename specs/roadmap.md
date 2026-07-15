@@ -106,13 +106,25 @@
 
 ---
 
-## Fase 6 — Cancelamento da Pipeline (atual)
+## Fase 6 — Cancelamento da Pipeline
 
-- [ ] Adicionar testes de unidade e integração no backend para validar o cancelamento cooperativo do pipeline
-- [ ] Adicionar teste E2E/Playwright no frontend para clicar no botão "Cancelar" e verificar o status `cancelled`
-- [ ] Implementar o endpoint de cancelamento `POST /pipeline/cancel/{job_id}` e o status `cancelled` no backend
-- [ ] Adicionar método cooperativo de checagem de cancelamento no loop em `backend/core/pipeline.py`
-- [ ] Implementar o botão "Cancelar Pipeline" no frontend (`PipelineMonitor.vue` ou `LogsPanel.vue`) e integrar com a store do Pinia
+- [x] Adicionar testes de unidade e integração no backend para validar o cancelamento cooperativo do pipeline
+- [x] Adicionar teste E2E/Playwright no frontend para clicar no botão "Cancelar" e verificar o status `cancelled`
+- [x] Implementar o endpoint de cancelamento `POST /pipeline/cancel/{job_id}` e o status `cancelled` no backend
+- [x] Adicionar método cooperativo de checagem de cancelamento no loop em `backend/core/pipeline.py`
+- [x] Implementar o botão "Cancelar Pipeline" no frontend (`PipelineMonitor.vue` ou `LogsPanel.vue`) e integrar com a store do Pinia
+
+---
+
+## Fase 7 — Opção de Pular Tradução (atual)
+
+- [ ] Criar testes unitários e de integração no backend para validar o fluxo do pipeline sem a etapa de tradução
+- [ ] Criar teste E2E no frontend que verifique se o checkbox "Pular Tradução" vem marcado por padrão se os idiomas forem iguais e se pula a etapa ao rodar
+- [ ] Expor as configurações de idioma do `.env` em um novo endpoint do backend (ex: `GET /pipeline/config`)
+- [ ] Atualizar o endpoint `POST /pipeline/start` para receber um parâmetro opcional (ex: JSON body com `skip_translation: bool`)
+- [ ] Adaptar o loop do `run_pipeline` no backend para saltar a chamada do `translation_service` caso o parâmetro seja verdadeiro e marcar o status da etapa correspondente na store/WS
+- [ ] Adicionar o checkbox "Pular Tradução" no frontend (`PipelineMonitor.vue`) e integrar seu estado na chamada de início do pipeline na store
+
 
 
 

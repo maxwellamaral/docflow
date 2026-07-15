@@ -2,7 +2,7 @@
 from fastapi import APIRouter, BackgroundTasks, HTTPException, WebSocket, WebSocketDisconnect
 
 from backend.core import pipeline as pipeline_core
-from backend.models.schemas import PipelineJob, PipelineStartResponse, ProgressEvent
+from backend.models.schemas import PipelineJob, PipelineStartResponse, ProgressEvent, PipelineStartRequest
 from backend.services.storage_service import StorageService
 
 router = APIRouter(prefix="/pipeline", tags=["pipeline"])
@@ -31,7 +31,10 @@ async def _broadcast_progress(event: ProgressEvent) -> None:
 
 
 @router.post("/start", response_model=PipelineStartResponse)
-async def start_pipeline(background_tasks: BackgroundTasks) -> PipelineStartResponse:
+async def start_pipeline(
+    background_tasks: BackgroundTasks,
+    request: PipelineStartRequest = PipelineStartRequest(),
+) -> PipelineStartResponse:
     """Inicia a pipeline de processamento em background.
 
     Returns:
@@ -47,7 +50,12 @@ async def start_pipeline(background_tasks: BackgroundTasks) -> PipelineStartResp
             detail="Nenhum PDF encontrado em ./input. Envie ao menos um arquivo antes de iniciar a pipeline.",
         )
     job = pipeline_core.create_job()
-    background_tasks.add_task(pipeline_core.run_pipeline, job.job_id, _broadcast_progress)
+    background_tasks.add_task(
+        pipeline_core.run_pipeline,
+        job.job_id,
+        _broadcast_progress,
+        request.skip_translation,
+    )
     return PipelineStartResponse(
         job_id=job.job_id,
         message="Pipeline iniciada com sucesso.",
@@ -129,4 +137,19 @@ async def cancel_pipeline(job_id: str) -> dict[str, str]:
             detail="Job não encontrado ou já finalizado (não é possível cancelar).",
         )
     return {"message": "Pipeline cancelada com sucesso."}
+
+
+@router.get("/config")
+async def get_config() -> dict[str, str]:
+    """Retorna as configurações de idioma do backend.
+
+    Returns:
+        Dicionário contendo source_language e target_language.
+    """
+    from backend.core.config import settings
+
+    return {
+        "source_language": settings.source_language,
+        "target_language": settings.target_language,
+    }
 

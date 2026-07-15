@@ -6,6 +6,7 @@ import {
   connectProgressWebSocket,
   getJobStatus,
   cancelPipelineJob,
+  getPipelineConfig,
   type PipelineJob,
   type PipelineStatus,
   type ProgressEvent,
@@ -46,6 +47,7 @@ export const usePipelineStore = defineStore('pipeline', () => {
   const pipelineError = ref<string | null>(null)
   const isUploading = ref(false)
   const isRunning = ref(false)
+  const skipTranslation = ref(false)
   const uploadSuccessCount = ref(0)
   const logs = ref<LogEntry[]>([])
   const fileTasks = ref<FileTask[]>([])
@@ -108,7 +110,7 @@ export const usePipelineStore = defineStore('pipeline', () => {
     fileTasks.value = []
 
     try {
-      const { job_id } = await startPipeline()
+      const { job_id } = await startPipeline({ skip_translation: skipTranslation.value })
       currentJob.value = await getJobStatus(job_id)
       _listenWebSocket(job_id)
     } catch (err: unknown) {
@@ -292,6 +294,23 @@ export const usePipelineStore = defineStore('pipeline', () => {
     }
   }
 
+  async function loadConfig(): Promise<void> {
+    try {
+      const config = await getPipelineConfig()
+      if (
+        config.source_language &&
+        config.target_language &&
+        config.source_language.toLowerCase().trim() === config.target_language.toLowerCase().trim()
+      ) {
+        skipTranslation.value = true
+      } else {
+        skipTranslation.value = false
+      }
+    } catch (err) {
+      console.error('Erro ao carregar as configurações de idioma:', err)
+    }
+  }
+
   return {
     pendingFiles,
     currentJob,
@@ -312,6 +331,8 @@ export const usePipelineStore = defineStore('pipeline', () => {
     uploadAll,
     runPipeline,
     cancelPipeline,
+    skipTranslation,
+    loadConfig,
     reset,
   }
 })

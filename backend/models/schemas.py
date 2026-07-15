@@ -41,6 +41,12 @@ class PipelineJob(BaseModel):
     error: str | None = None
 
 
+class PipelineStartRequest(BaseModel):
+    """Parâmetros de configuração de inicialização da pipeline."""
+
+    skip_translation: bool = False
+
+
 class PipelineStartResponse(BaseModel):
     """Resposta ao iniciar uma pipeline."""
 

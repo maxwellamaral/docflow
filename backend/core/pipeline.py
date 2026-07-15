@@ -72,6 +72,7 @@ def cancel_job(job_id: str) -> bool:
 async def run_pipeline(
     job_id: str,
     on_progress: ProgressCallback | None = None,
+    skip_translation: bool = False,
 ) -> PipelineJob:
     """Executa a pipeline completa para todos os PDFs em ./input.
 
@@ -169,14 +170,24 @@ async def run_pipeline(
                 await emit(PipelineStatus.CANCELLED, job.progress, message="Cancelado pelo usuário.")
                 return job
 
-            await emit(
-                PipelineStatus.TRANSLATING,
-                file_base_progress + step_size // 3,
-                str(pdf_path),
-                f"Traduzindo {pdf_path.name}…",
-            )
-            html_content = html_bytes.decode("utf-8", errors="replace")
-            translated_html = await translation.translate_html(html_content)
+            if skip_translation:
+                await emit(
+                    PipelineStatus.TRANSLATING,
+                    file_base_progress + step_size // 3,
+                    str(pdf_path),
+                    f"Tradução pulada para {pdf_path.name}.",
+                )
+                translated_html = html_bytes.decode("utf-8", errors="replace")
+            else:
+                await emit(
+                    PipelineStatus.TRANSLATING,
+                    file_base_progress + step_size // 3,
+                    str(pdf_path),
+                    f"Traduzindo {pdf_path.name}…",
+                )
+                html_content = html_bytes.decode("utf-8", errors="replace")
+                translated_html = await translation.translate_html(html_content)
+
             translated_path = storage.get_output_path(job_dirs, "translated", stem, ".html")
             translated_path.write_text(translated_html, encoding="utf-8")
 
