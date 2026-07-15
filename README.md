@@ -224,7 +224,7 @@ ollama pull translategemma:4b
 
 ## ▶️ Uso
 
-### Iniciar a aplicação completa
+### Iniciar a aplicação completa (Desenvolvimento local)
 
 ```bash
 uv run docflow
@@ -235,6 +235,24 @@ Este único comando inicia simultaneamente:
 - **Frontend** Vue.js em `http://localhost:5173`
 
 Abra o navegador em **http://localhost:5173**.
+
+### Iniciar a aplicação completa (Docker Compose / Produção)
+
+Para executar toda a stack do DocFlow em containers Docker isolados (com o frontend servido via Nginx na porta `8090`):
+
+```bash
+docker compose up -d
+```
+
+Abra o navegador em **http://localhost:8090**.
+
+> [!IMPORTANT]
+> **Atualização de alterações no Docker:**  
+> Como as imagens Docker copiam e compilam o código-fonte em tempo de build, qualquer alteração que você fizer no código do frontend ou backend **não será atualizada automaticamente** no container em execuções subsequentes de `docker compose up -d`.  
+> Para aplicar suas alterações nos containers, você **deve forçar a reconstrução das imagens** usando a flag `--build`:
+> ```bash
+> docker compose up -d --build
+> ```
 
 ### Fluxo de uso
 
