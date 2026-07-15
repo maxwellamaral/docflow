@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { type PropType } from 'vue'
+import { type PropType, ref, onBeforeUnmount } from 'vue'
 import { viewOutputFileUrl, type OutputEntry } from '../api/client'
 
 const props = defineProps({
@@ -29,6 +29,26 @@ function fileIcon(name: string): string {
   const ext = name.split('.').pop()?.toLowerCase() ?? ''
   return fileIconMap[ext] ?? '📄'
 }
+
+const isConfirming = ref(false)
+let timerId: any = null
+
+function handleDelete() {
+  if (isConfirming.value) {
+    emit('delete', props.entry.path, props.entry.name)
+    isConfirming.value = false
+    if (timerId) clearTimeout(timerId)
+  } else {
+    isConfirming.value = true
+    timerId = setTimeout(() => {
+      isConfirming.value = false
+    }, 4000)
+  }
+}
+
+onBeforeUnmount(() => {
+  if (timerId) clearTimeout(timerId)
+})
 </script>
 
 <template>
@@ -41,10 +61,13 @@ function fileIcon(name: string): string {
       <span class="file-name dir-name">{{ entry.name }}</span>
       <div class="file-actions">
         <button
-          class="btn btn-sm btn-danger"
-          title="Excluir pasta"
-          @click="emit('delete', entry.path, entry.name)"
-        >🗑</button>
+          :class="['btn', 'btn-sm', isConfirming ? 'btn-primary' : 'btn-danger']"
+          :title="isConfirming ? 'Clique novamente para confirmar a exclusão da pasta' : 'Excluir pasta'"
+          @click.stop="handleDelete"
+        >
+          <span v-if="isConfirming">⚠️ Confirmar?</span>
+          <span v-else>🗑</span>
+        </button>
       </div>
       <!-- Filhos recursivos -->
       <ul v-if="expandedDirs.has(entry.path)" class="file-list nested">
@@ -73,10 +96,13 @@ function fileIcon(name: string): string {
           title="Visualizar / Baixar"
         >⬇</a>
         <button
-          class="btn btn-sm btn-danger"
-          title="Excluir"
-          @click="emit('delete', entry.path, entry.name)"
-        >🗑</button>
+          :class="['btn', 'btn-sm', isConfirming ? 'btn-primary' : 'btn-danger']"
+          :title="isConfirming ? 'Clique novamente para confirmar a exclusão' : 'Excluir'"
+          @click.stop="handleDelete"
+        >
+          <span v-if="isConfirming">⚠️ Confirmar?</span>
+          <span v-else>🗑</span>
+        </button>
       </div>
     </template>
   </li>

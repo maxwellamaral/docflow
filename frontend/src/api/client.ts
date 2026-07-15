@@ -112,7 +112,7 @@ export const listInputFiles = (): Promise<{ files: FileInfo[] }> =>
   api.get('/files/input').then((r) => r.data)
 
 export const deleteInputFile = (filename: string): Promise<void> =>
-  api.delete(`/files/input/${filename}`)
+  api.delete(`/files/input/${encodeURIComponent(filename)}`)
 
 export const viewInputFileUrl = (filename: string): string =>
   `/files/input/${encodeURIComponent(filename)}`
@@ -120,8 +120,10 @@ export const viewInputFileUrl = (filename: string): string =>
 export const listOutputFiles = (): Promise<{ entries: OutputEntry[] }> =>
   api.get('/files/output').then((r) => r.data)
 
-export const deleteOutputFile = (filePath: string): Promise<void> =>
-  api.delete(`/files/output/${filePath}`)
+export const deleteOutputFile = (filePath: string): Promise<void> => {
+  const encodedPath = filePath.split('/').map(encodeURIComponent).join('/')
+  return api.delete(`/files/output/${encodedPath}`)
+}
 
 export const viewOutputFileUrl = (filePath: string): string =>
   `/files/output/${filePath}`

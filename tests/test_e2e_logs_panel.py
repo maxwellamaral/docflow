@@ -204,3 +204,40 @@ def test_pipeline_skip_translation_checkbox(page: Page) -> None:
     assert len(start_payloads) > 0
     assert start_payloads[0].get("translate") is False
     assert start_payloads[0].get("refine_ocr") is True
+
+
+def test_delete_input_file_via_ui(page: Page) -> None:
+    """Deve verificar a exclusão de um arquivo de entrada a partir do painel de arquivos."""
+    # 1. Configura mock para retornar um arquivo de entrada
+    page.route("**/files/input", lambda route: route.fulfill(
+        status=200,
+        json={"files": [{"name": "teste_excluir.pdf", "path": "teste_excluir.pdf", "size": 1024}]}
+    ))
+
+    # 2. Intercepta a chamada de exclusão do arquivo
+    delete_called = []
+    def handle_delete(route):
+        delete_called.append(True)
+        route.fulfill(status=204)
+    page.route("**/files/input/teste_excluir.pdf", handle_delete)
+
+    page.goto("http://localhost:5173")
+
+    # 3. O item do arquivo deve estar visível na interface
+    expect(page.locator("text=teste_excluir.pdf")).to_be_visible()
+
+    # 4. Clica no botão de excluir pela primeira vez (entra em modo de confirmação)
+    trash_button = page.locator("li:has-text('teste_excluir.pdf') button")
+    expect(trash_button).to_be_visible()
+    trash_button.click()
+
+    # 5. O botão deve mudar de texto para incluir "Confirmar"
+    expect(page.locator("text=Confirmar?")).to_be_visible()
+
+    # 6. Clica pela segunda vez para disparar a chamada real de exclusão
+    trash_button.click()
+
+    # 7. Verifica se o frontend de fato disparou o DELETE correspondente
+    page.wait_for_timeout(500)
+    assert len(delete_called) == 1
+

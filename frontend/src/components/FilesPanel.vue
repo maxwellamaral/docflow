@@ -88,19 +88,33 @@ async function handleUpload(event: Event) {
   }
 }
 
-async function removeInput(filename: string) {
-  if (!confirm(`Excluir "${filename}"?`)) return
-  try {
-    await deleteInputFile(filename)
-    flash(`"${filename}" excluído.`)
-    await loadInput()
-  } catch {
-    errorMsg.value = `Erro ao excluir "${filename}".`
+const pendingDeletes = ref<Record<string, number>>({})
+
+function removeInput(filename: string) {
+  const now = Date.now()
+  const pendingTime = pendingDeletes.value[filename]
+
+  if (pendingTime && now - pendingTime < 4000) {
+    deleteInputFile(filename)
+      .then(() => {
+        flash(`"${filename}" excluído.`)
+        loadInput()
+      })
+      .catch(() => {
+        errorMsg.value = `Erro ao excluir "${filename}".`
+      })
+    delete pendingDeletes.value[filename]
+  } else {
+    pendingDeletes.value[filename] = now
+    setTimeout(() => {
+      if (pendingDeletes.value[filename] === now) {
+        delete pendingDeletes.value[filename]
+      }
+    }, 4000)
   }
 }
 
 async function removeOutput(path: string, name: string) {
-  if (!confirm(`Excluir "${name}"?`)) return
   try {
     await deleteOutputFile(path)
     flash(`"${name}" excluído.`)
@@ -165,7 +179,14 @@ watch(() => pipelineStore.uploadSuccessCount, () => {
           <span class="file-size">{{ formatSize(file.size) }}</span>
           <div class="file-actions">
             <a :href="viewInputFileUrl(file.name)" target="_blank" class="btn btn-sm btn-ghost" title="Baixar">⬇</a>
-            <button class="btn btn-sm btn-danger" title="Excluir" @click="removeInput(file.name)">🗑</button>
+            <button
+              :class="['btn', 'btn-sm', pendingDeletes[file.name] ? 'btn-primary' : 'btn-danger']"
+              :title="pendingDeletes[file.name] ? 'Clique novamente para confirmar a exclusão' : 'Excluir'"
+              @click.stop="removeInput(file.name)"
+            >
+              <span v-if="pendingDeletes[file.name]">⚠️ Confirmar?</span>
+              <span v-else>🗑</span>
+            </button>
           </div>
         </li>
       </ul>

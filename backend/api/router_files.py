@@ -150,7 +150,18 @@ async def delete_input_file(filename: str) -> None:
     if not target.exists() or not target.is_file():
         raise HTTPException(status_code=404, detail="Arquivo não encontrado.")
 
-    target.unlink()
+    try:
+        target.unlink()
+    except PermissionError as exc:
+        raise HTTPException(
+            status_code=403,
+            detail=f"Sem permissão do sistema para excluir este arquivo: {exc}",
+        )
+    except OSError as exc:
+        raise HTTPException(
+            status_code=500,
+            detail=f"Erro de sistema operacional ao excluir o arquivo: {exc}",
+        )
 
 
 # ── Output ─────────────────────────────────────────────────────────────────────
@@ -201,7 +212,18 @@ async def delete_output_file(file_path: str) -> None:
     if not target.exists():
         raise HTTPException(status_code=404, detail="Arquivo ou pasta não encontrado.")
 
-    if target.is_dir():
-        shutil.rmtree(target)
-    else:
-        target.unlink()
+    try:
+        if target.is_dir():
+            shutil.rmtree(target)
+        else:
+            target.unlink()
+    except PermissionError as exc:
+        raise HTTPException(
+            status_code=403,
+            detail=f"Sem permissão do sistema para excluir esta pasta/arquivo: {exc}",
+        )
+    except OSError as exc:
+        raise HTTPException(
+            status_code=500,
+            detail=f"Erro de sistema operacional ao excluir pasta/arquivo: {exc}",
+        )
