@@ -197,7 +197,7 @@ watch(() => pipelineStore.uploadSuccessCount, () => {
 .tabs {
   display: flex;
   gap: 0.5rem;
-  border-bottom: 2px solid rgba(255,255,255,0.1);
+  border-bottom: 2px solid var(--file-item-border);
   padding-bottom: 0.5rem;
 }
 
@@ -205,11 +205,11 @@ watch(() => pipelineStore.uploadSuccessCount, () => {
   background: none; border: none;
   padding: 0.4rem 1rem; border-radius: 6px 6px 0 0;
   cursor: pointer; font-size: 0.9rem;
-  color: rgba(255,255,255,0.45);
+  color: var(--tab-btn-text);
   display: flex; align-items: center; gap: 0.4rem;
   transition: background 0.15s, color 0.15s;
 }
-.tab-btn:hover { background: rgba(255,255,255,0.06); color: rgba(255,255,255,0.75); }
+.tab-btn:hover { background: var(--tab-btn-hover-bg); color: var(--tab-btn-hover-text); }
 .tab-btn.active {
   background: rgba(124,140,248,0.15);
   color: #7c8cf8;
@@ -226,9 +226,9 @@ watch(() => pipelineStore.uploadSuccessCount, () => {
 .upload-label { cursor: pointer; display: inline-flex; align-items: center; }
 
 .btn-secondary {
-  background: #0f3460;
-  border: 1px solid #1a4a8a;
-  color: rgba(255,255,255,0.85);
+  background: var(--btn-secondary-bg);
+  color: var(--btn-secondary-text);
+  border-color: var(--btn-secondary-border);
   padding: 0.4rem 0.9rem; border-radius: 7px;
   cursor: pointer; font-size: 0.875rem;
 }
@@ -243,29 +243,30 @@ watch(() => pipelineStore.uploadSuccessCount, () => {
 .file-item {
   display: flex; align-items: center; gap: 0.5rem;
   padding: 0.4rem 0.6rem; border-radius: 7px;
-  background: rgba(255,255,255,0.05);
-  border: 1px solid rgba(255,255,255,0.1);
+  background: var(--file-item-bg);
+  border: 1px solid var(--file-item-border);
 }
 
 .file-icon { font-size: 1rem; flex-shrink: 0; }
 .file-name {
   flex: 1; font-size: 0.875rem;
-  color: rgba(255,255,255,0.87);
+  color: inherit;
   overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0;
 }
 .file-size {
-  font-size: 0.78rem; color: rgba(255,255,255,0.45);
+  font-size: 0.78rem; color: var(--tab-btn-text);
   white-space: nowrap; flex-shrink: 0;
 }
 .file-actions { display: flex; gap: 0.3rem; flex-shrink: 0; }
 
 .btn-sm { padding: 0.2rem 0.5rem; font-size: 0.8rem; border-radius: 5px; }
 .btn-ghost {
-  background: transparent; border: 1px solid rgba(255,255,255,0.2);
-  color: rgba(255,255,255,0.75); text-decoration: none;
+  background: transparent; border: 1px solid var(--btn-ghost-border);
+  color: var(--btn-ghost-text); text-decoration: none;
   cursor: pointer; display: inline-flex; align-items: center;
 }
-.btn-ghost:hover { background: rgba(255,255,255,0.08); }
+.btn-ghost:hover { background: var(--btn-ghost-hover-bg); }
+
 .btn-danger {
   background: transparent; border: 1px solid rgba(233,69,96,0.5);
   color: #e94560; cursor: pointer;
@@ -273,18 +274,18 @@ watch(() => pipelineStore.uploadSuccessCount, () => {
 .btn-danger:hover { background: rgba(233,69,96,0.12); }
 
 .empty-msg {
-  color: rgba(255,255,255,0.4); font-size: 0.875rem;
+  color: var(--empty-msg-text); font-size: 0.875rem;
   text-align: center; padding: 1.5rem 0;
 }
 
 .loading-row {
   display: flex; align-items: center; gap: 0.5rem;
-  color: rgba(255,255,255,0.4); font-size: 0.875rem;
+  color: var(--empty-msg-text); font-size: 0.875rem;
 }
 
 .spinner {
   width: 14px; height: 14px;
-  border: 2px solid rgba(255,255,255,0.15);
+  border: 2px solid var(--spinner-border);
   border-top-color: #7c8cf8;
   border-radius: 50%; animation: spin 0.7s linear infinite; flex-shrink: 0;
 }

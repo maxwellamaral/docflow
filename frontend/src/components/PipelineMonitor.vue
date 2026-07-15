@@ -3,7 +3,7 @@
     <h2>⚙️ Pipeline</h2>
 
     <div class="skip-translation-checkbox" style="margin: 0 0 1rem 0; display: flex; flex-direction: column; gap: 0.5rem;">
-      <label style="display: inline-flex; align-items: center; cursor: pointer; color: #f8fafc; font-size: 0.9rem;">
+      <label style="display: inline-flex; align-items: center; cursor: pointer; color: inherit; font-size: 0.9rem;">
         <input
           type="checkbox"
           v-model="store.translate"
@@ -12,7 +12,7 @@
         />
         Traduzir Documentos
       </label>
-      <label style="display: inline-flex; align-items: center; cursor: pointer; color: #f8fafc; font-size: 0.9rem;">
+      <label style="display: inline-flex; align-items: center; cursor: pointer; color: inherit; font-size: 0.9rem;">
         <input
           type="checkbox"
           v-model="store.refineOcr"

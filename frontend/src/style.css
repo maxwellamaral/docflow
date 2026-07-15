@@ -4,11 +4,90 @@
   line-height: 1.5;
   font-weight: 400;
   color-scheme: light dark;
-  color: rgba(255, 255, 255, 0.87);
-  background-color: #1a1a2e;
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
+
+  /* Variáveis do Tema Escuro (Padrão) */
+  --bg-color: #1a1a2e;
+  --text-color: rgba(255, 255, 255, 0.87);
+  --panel-bg: #16213e;
+  --panel-border: #0f3460;
+  --btn-secondary-bg: #0f3460;
+  --btn-secondary-border: #1a4a8a;
+  --btn-secondary-text: rgba(255,255,255,0.85);
+  --drop-zone-border: #0f3460;
+  --drop-zone-text: #aaa;
+  --file-item-bg: rgba(255,255,255,0.04);
+  --file-item-border: rgba(255,255,255,0.1);
+  --tab-btn-text: rgba(255,255,255,0.45);
+  --tab-btn-hover-bg: rgba(255,255,255,0.06);
+  --tab-btn-hover-text: rgba(255,255,255,0.75);
+  --progress-wrap-bg: rgba(255,255,255,0.08);
+  --output-group-border: #0f3460;
+  --btn-ghost-border: rgba(255,255,255,0.2);
+  --btn-ghost-text: rgba(255,255,255,0.75);
+  --btn-ghost-hover-bg: rgba(255,255,255,0.08);
+  --empty-msg-text: #555;
+  --loading-row-text: #aaa;
+  --spinner-border: rgba(255,255,255,0.15);
+  
+  color: var(--text-color);
+  background-color: var(--bg-color);
+}
+
+/* Modificações para o Tema Claro */
+[data-theme="light"] {
+  --bg-color: #f0f2f5;
+  --text-color: #213547;
+  --panel-bg: #fff;
+  --panel-border: #dde3ed;
+  --btn-secondary-bg: #e8ecf5;
+  --btn-secondary-border: #c5d0e0;
+  --btn-secondary-text: #213547;
+  --drop-zone-border: #c0cbe0;
+  --drop-zone-text: #777;
+  --file-item-bg: rgba(0,0,0,0.03);
+  --file-item-border: rgba(0,0,0,0.08);
+  --tab-btn-text: rgba(0,0,0,0.45);
+  --tab-btn-hover-bg: rgba(0,0,0,0.03);
+  --tab-btn-hover-text: rgba(0,0,0,0.75);
+  --progress-wrap-bg: rgba(0,0,0,0.07);
+  --output-group-border: #e0e6f0;
+  --btn-ghost-border: rgba(0,0,0,0.15);
+  --btn-ghost-text: rgba(0,0,0,0.75);
+  --btn-ghost-hover-bg: rgba(0,0,0,0.04);
+  --empty-msg-text: rgba(0,0,0,0.4);
+  --loading-row-text: rgba(0,0,0,0.4);
+  --spinner-border: rgba(0,0,0,0.1);
+}
+
+/* Se não houver preferência manual salva, respeita a preferência do sistema */
+@media (prefers-color-scheme: light) {
+  :root:not([data-theme="dark"]) {
+    --bg-color: #f0f2f5;
+    --text-color: #213547;
+    --panel-bg: #fff;
+    --panel-border: #dde3ed;
+    --btn-secondary-bg: #e8ecf5;
+    --btn-secondary-border: #c5d0e0;
+    --btn-secondary-text: #213547;
+    --drop-zone-border: #c0cbe0;
+    --drop-zone-text: #777;
+    --file-item-bg: rgba(0,0,0,0.03);
+    --file-item-border: rgba(0,0,0,0.08);
+    --tab-btn-text: rgba(0,0,0,0.45);
+    --tab-btn-hover-bg: rgba(0,0,0,0.03);
+    --tab-btn-hover-text: rgba(0,0,0,0.75);
+    --progress-wrap-bg: rgba(0,0,0,0.07);
+    --output-group-border: #e0e6f0;
+    --btn-ghost-border: rgba(0,0,0,0.15);
+    --btn-ghost-text: rgba(0,0,0,0.75);
+    --btn-ghost-hover-bg: rgba(0,0,0,0.04);
+    --empty-msg-text: rgba(0,0,0,0.4);
+    --loading-row-text: rgba(0,0,0,0.4);
+    --spinner-border: rgba(0,0,0,0.1);
+  }
 }
 
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -23,13 +102,14 @@ a:hover { text-decoration: underline; }
 
 /* ── Panel card ─────────────────────────────────────────────── */
 .panel {
-  background: #16213e;
-  border: 1px solid #0f3460;
+  background: var(--panel-bg);
+  border: 1px solid var(--panel-border);
   border-radius: 12px;
   padding: 1.4rem;
   display: flex;
   flex-direction: column;
   gap: 0.8rem;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
 }
 
 /* ── Buttons ────────────────────────────────────────────────── */
@@ -55,9 +135,9 @@ a:hover { text-decoration: underline; }
   color: #fff;
 }
 .btn-secondary {
-  background: #0f3460;
-  color: rgba(255,255,255,0.85);
-  border-color: #1a4a8a;
+  background: var(--btn-secondary-bg);
+  color: var(--btn-secondary-text);
+  border-color: var(--btn-secondary-border);
 }
 .btn-sm { padding: 0.3em 0.8em; font-size: 0.82rem; }
 .btn-icon {
@@ -73,7 +153,7 @@ a:hover { text-decoration: underline; }
 
 /* ── Drop zone ──────────────────────────────────────────────── */
 .drop-zone {
-  border: 2px dashed #0f3460;
+  border: 2px dashed var(--drop-zone-border);
   border-radius: 10px;
   padding: 1.5rem 1rem;
   text-align: center;
@@ -82,7 +162,7 @@ a:hover { text-decoration: underline; }
   flex-direction: column;
   gap: 0.6rem;
   align-items: center;
-  color: #aaa;
+  color: var(--drop-zone-text);
   font-size: 0.9rem;
 }
 .drop-zone--active {
@@ -101,7 +181,8 @@ a:hover { text-decoration: underline; }
   display: flex;
   align-items: center;
   justify-content: space-between;
-  background: rgba(255,255,255,0.04);
+  background: var(--file-item-bg);
+  border: 1px solid var(--file-item-border);
   border-radius: 6px;
   padding: 0.35rem 0.7rem;
   font-size: 0.88rem;
@@ -114,7 +195,7 @@ a:hover { text-decoration: underline; }
 
 .progress-bar-wrap {
   position: relative;
-  background: rgba(255,255,255,0.08);
+  background: var(--progress-wrap-bg);
   border-radius: 8px;
   height: 22px;
   overflow: hidden;
@@ -143,7 +224,7 @@ a:hover { text-decoration: underline; }
   border-radius: 20px;
   font-size: 0.82rem;
   font-weight: 600;
-  background: rgba(255,255,255,0.08);
+  background: var(--progress-wrap-bg);
   align-self: flex-start;
 }
 .status--converting  { background: rgba(124,140,248,0.2); color: #a3b0ff; }
@@ -151,34 +232,18 @@ a:hover { text-decoration: underline; }
 .status--exporting   { background: rgba(255,165,0,0.2);  color: #ffc46b; }
 .status--completed   { background: rgba(72,199,142,0.2); color: #6fedb0; }
 .status--failed      { background: rgba(233,69,96,0.35); color: #ff8096; }
-.status--pending     { background: rgba(255,255,255,0.06); color: #aaa; }
+.status--pending     { background: var(--file-item-bg); color: #aaa; }
 
-.progress-msg { font-size: 0.85rem; color: #aaa; }
+.progress-msg { font-size: 0.85rem; color: var(--loading-row-text); }
 .current-file { font-size: 0.82rem; color: #9aabff; font-style: italic; }
 
 /* ── Output groups ──────────────────────────────────────────── */
-.output-group { border-top: 1px solid #0f3460; padding-top: 0.6rem; }
+.output-group { border-top: 1px solid var(--output-group-border); padding-top: 0.6rem; }
 
 /* ── Messages ───────────────────────────────────────────────── */
 .error-msg  { color: #ff8096; font-size: 0.88rem; }
-.empty-msg  { color: #555;    font-size: 0.88rem; font-style: italic; }
+.empty-msg  { color: var(--empty-msg-text); font-size: 0.88rem; font-style: italic; }
 
 /* ── Actions row ────────────────────────────────────────────── */
 .actions { display: flex; gap: 0.6rem; flex-wrap: wrap; }
 
-/* ── Light mode ─────────────────────────────────────────────── */
-@media (prefers-color-scheme: light) {
-  :root {
-    color: #213547;
-    background-color: #f0f2f5;
-  }
-  .panel {
-    background: #fff;
-    border-color: #dde3ed;
-  }
-  .drop-zone { border-color: #c0cbe0; color: #777; }
-  .file-list li { background: rgba(0,0,0,0.03); }
-  .progress-bar-wrap { background: rgba(0,0,0,0.07); }
-  .output-group { border-color: #e0e6f0; }
-  .btn-secondary { background: #e8ecf5; color: #213547; border-color: #c5d0e0; }
-}
