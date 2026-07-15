@@ -1,142 +1,86 @@
 """
-Testes unitários para DoclingService.
+Testes unitários para DoclingService integrado localmente via SDK.
 
 História de Usuário:
-  Como pipeline de processamento,
-  Quero converter PDFs para HTML via Docling Server,
-  Para extrair o conteúdo estruturado do documento.
+  Como sistema de processamento de documentos,
+  Quero converter arquivos PDF em HTML usando a biblioteca do Docling localmente no backend e obter o progresso de cada página convertida,
+  Para que o usuário possa ver em tempo real o avanço página por página do documento na interface gráfica.
+
+Critérios de Aceitação:
+  - O serviço deve carregar e usar o `DocumentConverter` local da biblioteca `docling`.
+  - O serviço deve processar o documento dividindo-o em páginas individuais para monitoramento fino.
+  - O serviço deve aceitar um callback de progresso (`on_page_progress`) e chamá-lo para cada página processada.
+  - O serviço deve retornar o HTML unificado com o conteúdo de todas as páginas convertidas.
 """
 from pathlib import Path
-from unittest.mock import patch
-
-import httpx
+from unittest.mock import MagicMock, patch
 import pytest
-import respx
 
 from backend.services.docling_service import DoclingConversionError, DoclingService
 
-DOCLING_URL = "http://localhost:5001"
-TASK_ID = "abc-123"
-SAMPLE_HTML = "<html><body><h1>Test Document</h1><p>Content.</p></body></html>"
 
-SUBMIT_RESPONSE = {"task_id": TASK_ID, "task_status": "pending", "task_type": "convert"}
-POLL_RESPONSE_DONE = {"task_id": TASK_ID, "task_status": "success", "task_type": "convert"}
-RESULT_RESPONSE = {
-    "document": {"filename": "test.pdf", "html_content": SAMPLE_HTML},
-    "status": "success",
-    "errors": [],
-    "processing_time": 1.0,
-}
-
-
-def _no_sleep():
-    """Patch asyncio.sleep para não esperar nos testes."""
-    return patch("backend.services.docling_service.asyncio.sleep", return_value=None)
-
-
-@respx.mock
-async def test_convert_pdf_calls_correct_endpoint(tmp_path: Path) -> None:
-    """Deve realizar POST para /v1/convert/file/async com o arquivo PDF."""
-    pdf_file = tmp_path / "test.pdf"
-    pdf_file.write_bytes(b"%PDF-1.4 test")
-
-    submit = respx.post(f"{DOCLING_URL}/v1/convert/file/async").mock(
-        return_value=httpx.Response(200, json=SUBMIT_RESPONSE)
-    )
-    respx.get(f"{DOCLING_URL}/v1/status/poll/{TASK_ID}").mock(
-        return_value=httpx.Response(200, json=POLL_RESPONSE_DONE)
-    )
-    respx.get(f"{DOCLING_URL}/v1/result/{TASK_ID}").mock(
-        return_value=httpx.Response(200, json=RESULT_RESPONSE)
-    )
-
-    with _no_sleep():
-        service = DoclingService(base_url=DOCLING_URL)
-        result = await service.convert_pdf_to_html(pdf_file)
-
-    assert submit.called
-    assert result == SAMPLE_HTML.encode("utf-8")
-
-
-@respx.mock
-async def test_convert_pdf_returns_html_bytes(tmp_path: Path) -> None:
-    """Deve retornar o conteúdo HTML como bytes."""
+async def test_convert_pdf_returns_html_bytes_local(tmp_path: Path) -> None:
+    """Deve converter o PDF localmente e retornar o HTML consolidado como bytes."""
     pdf_file = tmp_path / "doc.pdf"
     pdf_file.write_bytes(b"%PDF-1.4 test")
 
-    respx.post(f"{DOCLING_URL}/v1/convert/file/async").mock(
-        return_value=httpx.Response(200, json=SUBMIT_RESPONSE)
-    )
-    respx.get(f"{DOCLING_URL}/v1/status/poll/{TASK_ID}").mock(
-        return_value=httpx.Response(200, json=POLL_RESPONSE_DONE)
-    )
-    respx.get(f"{DOCLING_URL}/v1/result/{TASK_ID}").mock(
-        return_value=httpx.Response(200, json=RESULT_RESPONSE)
-    )
+    # Mock das dependências locais da biblioteca docling e pypdf
+    with (
+        patch("backend.services.docling_service.PdfReader") as MockPdfReader,
+        patch("backend.services.docling_service.PdfWriter") as MockPdfWriter,
+        patch("backend.services.docling_service.DocumentConverter") as MockConverter,
+        patch("backend.services.docling_service.BeautifulSoup") as MockBS,
+    ):
+        # Configura o leitor de PDF mockado para simular 2 páginas
+        mock_reader = MockPdfReader.return_value
+        mock_reader.pages = [MagicMock(), MagicMock()]
 
-    with _no_sleep():
-        service = DoclingService(base_url=DOCLING_URL)
+        # Configura o conversor mockado para retornar um HTML fake
+        mock_converter = MockConverter.return_value
+        mock_result = MagicMock()
+        mock_result.document.export_to_html.return_value = "<html><body><p>Conteudo da pagina</p></body></html>"
+        mock_converter.convert.return_value = mock_result
+
+        # Configura o BeautifulSoup para retornar a div interna da página
+        mock_soup = MockBS.return_value
+        mock_soup.find.return_value = MagicMock(decode_contents=lambda: "<div>Conteudo</div>")
+
+        service = DoclingService()
         result = await service.convert_pdf_to_html(pdf_file)
 
-    assert isinstance(result, bytes)
-    assert b"<html" in result
+        assert isinstance(result, bytes)
+        assert b"<div>Conteudo</div>" in result
 
 
-@respx.mock
-async def test_convert_pdf_polls_until_success(tmp_path: Path) -> None:
-    """Deve continuar polling enquanto task_status for 'pending' ou 'started'."""
-    pdf_file = tmp_path / "test.pdf"
+async def test_convert_pdf_calls_progress_callback(tmp_path: Path) -> None:
+    """Deve chamar o callback de progresso para cada página convertida."""
+    pdf_file = tmp_path / "doc.pdf"
     pdf_file.write_bytes(b"%PDF-1.4 test")
 
-    respx.post(f"{DOCLING_URL}/v1/convert/file/async").mock(
-        return_value=httpx.Response(200, json=SUBMIT_RESPONSE)
-    )
-    poll_route = respx.get(f"{DOCLING_URL}/v1/status/poll/{TASK_ID}").mock(
-        side_effect=[
-            httpx.Response(200, json={"task_id": TASK_ID, "task_status": "pending"}),
-            httpx.Response(200, json={"task_id": TASK_ID, "task_status": "started"}),
-            httpx.Response(200, json=POLL_RESPONSE_DONE),
-        ]
-    )
-    respx.get(f"{DOCLING_URL}/v1/result/{TASK_ID}").mock(
-        return_value=httpx.Response(200, json=RESULT_RESPONSE)
-    )
+    progress_calls = []
+    def callback(current: int, total: int):
+        progress_calls.append((current, total))
 
-    with _no_sleep():
-        service = DoclingService(base_url=DOCLING_URL)
-        result = await service.convert_pdf_to_html(pdf_file)
+    with (
+        patch("backend.services.docling_service.PdfReader") as MockPdfReader,
+        patch("backend.services.docling_service.PdfWriter") as MockPdfWriter,
+        patch("backend.services.docling_service.DocumentConverter") as MockConverter,
+        patch("backend.services.docling_service.BeautifulSoup") as MockBS,
+    ):
+        mock_reader = MockPdfReader.return_value
+        mock_reader.pages = [MagicMock(), MagicMock(), MagicMock()] # 3 páginas
 
-    assert poll_route.call_count == 3
-    assert result == SAMPLE_HTML.encode("utf-8")
+        mock_converter = MockConverter.return_value
+        mock_result = MagicMock()
+        mock_result.document.export_to_html.return_value = "<html><body><p>Pagina</p></body></html>"
+        mock_converter.convert.return_value = mock_result
 
+        mock_soup = MockBS.return_value
+        mock_soup.find.return_value = MagicMock(decode_contents=lambda: "<div>Pagina</div>")
 
-@respx.mock
-async def test_convert_pdf_raises_on_http_error(tmp_path: Path) -> None:
-    """Deve lançar DoclingConversionError quando o submit retornar erro HTTP."""
-    pdf_file = tmp_path / "test.pdf"
-    pdf_file.write_bytes(b"%PDF-1.4 test")
+        service = DoclingService()
+        await service.convert_pdf_to_html(pdf_file, on_page_progress=callback)
 
-    respx.post(f"{DOCLING_URL}/v1/convert/file/async").mock(
-        return_value=httpx.Response(500, text="Internal Server Error")
-    )
-
-    with _no_sleep():
-        service = DoclingService(base_url=DOCLING_URL)
-        with pytest.raises(DoclingConversionError, match="500"):
-            await service.convert_pdf_to_html(pdf_file)
-
-
-@respx.mock
-async def test_convert_pdf_raises_on_connection_error(tmp_path: Path) -> None:
-    """Deve lançar DoclingConversionError quando o servidor não estiver acessível."""
-    pdf_file = tmp_path / "test.pdf"
-    pdf_file.write_bytes(b"%PDF-1.4 test")
-
-    respx.post(f"{DOCLING_URL}/v1/convert/file/async").mock(
-        side_effect=httpx.ConnectError("Connection refused")
-    )
-
-    with _no_sleep():
-        service = DoclingService(base_url=DOCLING_URL)
-        with pytest.raises(DoclingConversionError):
-            await service.convert_pdf_to_html(pdf_file)
+        # Deve chamar o callback 3 vezes (páginas 1, 2 e 3)
+        assert len(progress_calls) == 3
+        assert progress_calls == [(1, 3), (2, 3), (3, 3)]

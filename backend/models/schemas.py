@@ -14,6 +14,7 @@ class PipelineStatus(str, Enum):
     EXPORTING = "exporting"
     COMPLETED = "completed"
     FAILED = "failed"
+    CANCELLED = "cancelled"
 
 
 class PipelineJob(BaseModel):

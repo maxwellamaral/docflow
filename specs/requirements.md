@@ -3,12 +3,7 @@
 ## Requisitos Funcionais
 
 1. O sistema deve permitir o upload de documentos em formato PDF para uma pasta `./input`.
-2. Deve ser possível iniciar uma pipeline que processe todos os PDFs presentes em `./input` e os converta para HTML usando o serviço Docling conforme a configuração do `docker-compose-docling-server.yaml`.
-   * Configurações da conversão:
-     * Image Export Mode: placeholder
-     * Pipeline type: standard
-     * OCR Engine: Auto
-     * Return as file: True
+2. Deve ser possível iniciar uma pipeline que processe todos os PDFs presentes em `./input` e os converta para HTML usando o SDK Python do Docling localmente integrado no backend, fornecendo o progresso e o status da conversão página por página em tempo real.
 3. Os arquivos HTML gerados devem ser traduzidos para outro idioma utilizando o modelo `translategemma:4b` que está disponível no Ollama instalado localmente. A tradução deve ser feita de forma eficiente, aproveitando a GPU disponível.
 4. A tradução deve ser executada localmente, aproveitando a GPU NVIDIA GeForce 4060 (8GB VRAM).
 5. Após a tradução, os arquivos devem ser convertidos para os formatos Word (.docx) e PDF.
@@ -17,6 +12,15 @@
    * Iniciar e monitorar o progresso da pipeline.
    * Baixar os arquivos resultantes (HTML, traduzidos, Word e PDF).
 7. Os arquivos processados devem ser armazenados em uma pasta `./output` organizada por tipo de arquivo e data de processamento.
+8. Deve haver um painel grande de logs no frontend (LogsPanel.vue) integrado ao layout principal (App.vue) que:
+   * Exiba cada arquivo PDF em processamento de forma individual, detalhando suas três etapas de execução (Conversão HTML, Tradução e Exportação).
+   * Utilize uma barra de progresso visual para indicar o progresso e o estado atual de cada etapa (Pendente, Em Execução, Concluída ou Falha).
+   * Monitore e exiba a duração de cada etapa em segundos, atualizada em tempo real enquanto estiver ativa.
+   * Apresente uma seção expansível ou área de histórico contendo as mensagens brutas do pipeline com seus respectivos timestamps.
+9. O sistema deve permitir que o usuário cancele/pare uma pipeline ativa a qualquer momento:
+   * A interface do usuário no frontend deve expor um botão visível para parar ou cancelar a execução da pipeline atual.
+   * O backend deve interromper cooperativamente a execução de novas etapas no pipeline do job correspondente e definir seu status final como `cancelled` (cancelado).
+
 
 ## Requisitos Não Funcionais
 

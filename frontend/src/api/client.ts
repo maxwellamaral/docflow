@@ -19,6 +19,7 @@ export type PipelineStatus =
   | 'exporting'
   | 'completed'
   | 'failed'
+  | 'cancelled'
 
 export interface PipelineJob {
   job_id: string
@@ -50,6 +51,9 @@ export const startPipeline = (): Promise<PipelineStartResponse> =>
 
 export const getJobStatus = (jobId: string): Promise<PipelineJob> =>
   api.get<PipelineJob>(`/pipeline/status/${jobId}`).then((r) => r.data)
+
+export const cancelPipelineJob = (jobId: string): Promise<void> =>
+  api.post<void>(`/pipeline/cancel/${jobId}`).then(() => {})
 
 export const connectProgressWebSocket = (
   jobId: string,

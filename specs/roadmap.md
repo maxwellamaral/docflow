@@ -97,6 +97,25 @@
 
 ---
 
+## Fase 5 — Painel de Logs Avançado
+
+- [x] Criar teste E2E com Playwright em `tests/test_e2e_logs_panel.py` que valide a exibição de etapas, progresso e logs no painel
+- [x] Atualizar a store do Pinia `frontend/src/stores/pipeline.ts` para estruturar e manter as etapas do pipeline e seus logs (rastreando duração e progresso por etapa a partir dos eventos de progresso)
+- [x] Implementar a visualização detalhada de etapas, duração ativa e logs brutos no `frontend/src/components/LogsPanel.vue`
+- [x] Importar e registrar o `LogsPanel.vue` no arquivo `frontend/src/App.vue` garantindo layout responsivo e de alta qualidade estética
+
+---
+
+## Fase 6 — Cancelamento da Pipeline (atual)
+
+- [ ] Adicionar testes de unidade e integração no backend para validar o cancelamento cooperativo do pipeline
+- [ ] Adicionar teste E2E/Playwright no frontend para clicar no botão "Cancelar" e verificar o status `cancelled`
+- [ ] Implementar o endpoint de cancelamento `POST /pipeline/cancel/{job_id}` e o status `cancelled` no backend
+- [ ] Adicionar método cooperativo de checagem de cancelamento no loop em `backend/core/pipeline.py`
+- [ ] Implementar o botão "Cancelar Pipeline" no frontend (`PipelineMonitor.vue` ou `LogsPanel.vue`) e integrar com a store do Pinia
+
+
+
 ## Dependências Python (previstas)
 
 ```toml

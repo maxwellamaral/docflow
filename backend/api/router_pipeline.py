@@ -107,3 +107,26 @@ async def websocket_pipeline(websocket: WebSocket, job_id: str) -> None:
         conns = _ws_connections.get(job_id, [])
         if websocket in conns:
             conns.remove(websocket)
+
+
+@router.post("/cancel/{job_id}")
+async def cancel_pipeline(job_id: str) -> dict[str, str]:
+    """Cancela uma pipeline em execução de forma cooperativa.
+
+    Args:
+        job_id: Identificador único do job.
+
+    Returns:
+        Mensagem de confirmação.
+
+    Raises:
+        HTTPException 404: Se o job não for encontrado ou já finalizado.
+    """
+    success = pipeline_core.cancel_job(job_id)
+    if not success:
+        raise HTTPException(
+            status_code=404,
+            detail="Job não encontrado ou já finalizado (não é possível cancelar).",
+        )
+    return {"message": "Pipeline cancelada com sucesso."}
+

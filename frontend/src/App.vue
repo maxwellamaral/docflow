@@ -3,6 +3,7 @@ import UploadPanel from './components/UploadPanel.vue'
 import PipelineMonitor from './components/PipelineMonitor.vue'
 import DownloadPanel from './components/DownloadPanel.vue'
 import FilesPanel from './components/FilesPanel.vue'
+import LogsPanel from './components/LogsPanel.vue'
 </script>
 
 <template>
@@ -17,6 +18,7 @@ import FilesPanel from './components/FilesPanel.vue'
       <PipelineMonitor />
       <DownloadPanel />
       <FilesPanel />
+      <LogsPanel class="logs-panel-span" />
     </main>
   </div>
 </template>
@@ -46,4 +48,9 @@ import FilesPanel from './components/FilesPanel.vue'
   max-width: 1200px;
   margin: 0 auto;
 }
+
+.logs-panel-span {
+  grid-column: 1 / -1;
+}
 </style>
+

@@ -11,6 +11,15 @@
       <span v-else>▶ Iniciar Pipeline</span>
     </button>
 
+    <button
+      v-if="store.isRunning"
+      class="btn btn-danger"
+      @click="store.cancelPipeline()"
+      style="margin-left: 0.5rem;"
+    >
+      ⏹️ Parar Pipeline
+    </button>
+
     <div v-if="store.currentJob" class="job-info">
       <div class="status-badge" :class="`status--${store.status}`">
         {{ statusLabel }}
@@ -55,6 +64,7 @@ const STATUS_LABELS: Record<string, string> = {
   exporting: 'Exportando .docx / .pdf',
   completed: 'Concluído ✅',
   failed: 'Falhou ❌',
+  cancelled: 'Cancelado 🛑',
 }
 
 const statusLabel = computed(() =>

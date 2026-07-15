@@ -6,7 +6,7 @@ from datetime import date, datetime
 from backend.core.config import settings
 from backend.models.schemas import PipelineJob, PipelineStatus, ProgressEvent
 from backend.services.conversion_service import ConversionService
-from backend.services.docling_service import DoclingService
+from backend.services.docling_service import DoclingService, PipelineCancelledError
 from backend.services.storage_service import StorageService
 from backend.services.translation_service import TranslationService
 
@@ -51,6 +51,22 @@ def list_jobs() -> list[PipelineJob]:
         Lista de todos os jobs.
     """
     return list(_jobs.values())
+
+
+def cancel_job(job_id: str) -> bool:
+    """Marca um job ativo como cancelado.
+
+    Args:
+        job_id: Identificador único do job.
+
+    Returns:
+        True se o job foi encontrado e cancelado, False caso contrário.
+    """
+    job = _jobs.get(job_id)
+    if job and job.status not in (PipelineStatus.COMPLETED, PipelineStatus.FAILED, PipelineStatus.CANCELLED):
+        job.status = PipelineStatus.CANCELLED
+        return True
+    return False
 
 
 async def run_pipeline(
@@ -111,22 +127,48 @@ async def run_pipeline(
             return job
 
         for idx, pdf_path in enumerate(pdf_files):
+            # Verifica cancelamento no início do loop do arquivo
+            if job.status == PipelineStatus.CANCELLED:
+                await emit(PipelineStatus.CANCELLED, job.progress, message="Cancelado pelo usuário.")
+                return job
+
             stem = pdf_path.stem
             file_base_progress = int((idx / total) * 100)
             step_size = 100 // total
 
             # Etapa 1: PDF → HTML
+            async def on_page_progress(current_page: int, total_pages: int) -> None:
+                if job.status == PipelineStatus.CANCELLED:
+                    raise PipelineCancelledError("Cancelado pelo usuário.")
+                page_progress = file_base_progress + int((current_page / total_pages) * (step_size // 3))
+                await emit(
+                    PipelineStatus.CONVERTING,
+                    page_progress,
+                    str(pdf_path),
+                    f"Convertendo {pdf_path.name} (página {current_page}/{total_pages})…",
+                )
+
             await emit(
                 PipelineStatus.CONVERTING,
                 file_base_progress,
                 str(pdf_path),
-                f"Convertendo {pdf_path.name} para HTML…",
+                f"Iniciando conversão de {pdf_path.name} para HTML…",
             )
-            html_bytes = await docling.convert_pdf_to_html(pdf_path)
+            html_bytes = await docling.convert_pdf_to_html(pdf_path, on_page_progress=on_page_progress)
+
+            # Verifica cancelamento após a conversão do HTML
+            if job.status == PipelineStatus.CANCELLED:
+                await emit(PipelineStatus.CANCELLED, job.progress, message="Cancelado pelo usuário.")
+                return job
+
             html_path = storage.get_output_path(job_dirs, "html", stem, ".html")
             html_path.write_bytes(html_bytes)
 
             # Etapa 2: Tradução do HTML
+            if job.status == PipelineStatus.CANCELLED:
+                await emit(PipelineStatus.CANCELLED, job.progress, message="Cancelado pelo usuário.")
+                return job
+
             await emit(
                 PipelineStatus.TRANSLATING,
                 file_base_progress + step_size // 3,
@@ -139,6 +181,10 @@ async def run_pipeline(
             translated_path.write_text(translated_html, encoding="utf-8")
 
             # Etapa 3: Exportação para .docx e .pdf
+            if job.status == PipelineStatus.CANCELLED:
+                await emit(PipelineStatus.CANCELLED, job.progress, message="Cancelado pelo usuário.")
+                return job
+
             await emit(
                 PipelineStatus.EXPORTING,
                 file_base_progress + (step_size * 2) // 3,
@@ -160,9 +206,17 @@ async def run_pipeline(
                 ]
             )
 
+        if job.status == PipelineStatus.CANCELLED:
+            await emit(PipelineStatus.CANCELLED, job.progress, message="Cancelado pelo usuário.")
+            return job
+
         await emit(PipelineStatus.COMPLETED, 100, message="Pipeline concluída com sucesso!")
 
     except Exception as exc:
+        if isinstance(exc, PipelineCancelledError) or job.status == PipelineStatus.CANCELLED:
+            job.status = PipelineStatus.CANCELLED
+            await emit(PipelineStatus.CANCELLED, job.progress, message="Cancelado pelo usuário.")
+            return job
         job.status = PipelineStatus.FAILED
         job.error = str(exc)
         await emit(PipelineStatus.FAILED, job.progress, message=f"Erro: {exc}")
