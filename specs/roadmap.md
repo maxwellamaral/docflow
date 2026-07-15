@@ -127,14 +127,23 @@
 
 ---
 
-## Fase 8 — Refinamento de OCR e Extração de Figuras (atual)
+## Fase 8 — Refinamento de OCR e Extração de Figuras
 
-- [ ] Criar testes unitários no backend para validar a extração de imagens pelo Docling e a rota de refinamento do OCR no TranslationService
-- [ ] Criar testes E2E no frontend que validem a exibição dos novos checkboxes de Traduzir e Refinar OCR na UI
-- [ ] Configurar o `docling_service.py` para extrair figuras (`generate_pictures=True`) e gravá-las no subdiretório de assets do job
-- [ ] Atualizar a classe `TranslationService` para suportar o método `refine_ocr_html` utilizando um prompt otimizado de LLM no Ollama
-- [ ] Adaptar o loop de `pipeline.py` para chamar a correção de OCR se a tradução for ignorada mas o refinamento estiver ativo, e salvar os caminhos das figuras no HTML final
-- [ ] Atualizar o frontend para expor os controles detalhados de tradução e refinamento, integrando-os na chamada de início de job
+- [x] Criar testes unitários no backend para validar a extração de imagens pelo Docling e a rota de refinamento do OCR no TranslationService
+- [x] Criar testes E2E no frontend que validem a exibição dos novos checkboxes de Traduzir e Refinar OCR na UI
+- [x] Configurar o `docling_service.py` para extrair figuras (`generate_pictures=True`) e gravá-las no subdiretório de assets do job
+- [x] Atualizar a classe `TranslationService` para suportar o método `refine_ocr_html` utilizando um prompt otimizado de LLM no Ollama
+- [x] Adaptar o loop de `pipeline.py` para chamar a correção de OCR se a tradução for ignorada mas o refinamento estiver ativo, e salvar os caminhos das figuras no HTML final
+- [x] Atualizar o frontend para expor os controles detalhados de tradução e refinamento, integrando-os na chamada de início de job
+
+---
+
+## Fase 9 — Progresso em Tempo Real do Ollama (atual)
+
+- [ ] Criar testes unitários no backend para certificar que o callback de progresso por bloco de texto é invocado no TranslationService (Fase Red)
+- [ ] Implementar suporte ao callback `on_block_progress` no método `translate_html` do `TranslationService`
+- [ ] Conectar o progresso em tempo real do processamento de blocos no orquestrador `pipeline.py` para atualizar e emitir o status via WebSocket
+
 
 
 

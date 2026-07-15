@@ -173,6 +173,22 @@ async def run_pipeline(
 
             html_content = html_bytes.decode("utf-8", errors="replace")
 
+            async def on_block_progress(current_block: int, total_blocks: int) -> None:
+                if job.status == PipelineStatus.CANCELLED:
+                    raise PipelineCancelledError("Cancelado pelo usuário.")
+                
+                # Progresso vai do início da tradução (33%) ao fim da tradução (66%) do tempo do arquivo
+                base_pct = file_base_progress + step_size // 3
+                block_pct = base_pct + int((current_block / total_blocks) * (step_size // 3))
+                
+                action_verb = "Traduzindo" if translate else "Refinando OCR de"
+                await emit(
+                    PipelineStatus.TRANSLATING,
+                    block_pct,
+                    str(pdf_path),
+                    f"{action_verb} {pdf_path.name} com IA (bloco {current_block}/{total_blocks})…",
+                )
+
             if translate:
                 await emit(
                     PipelineStatus.TRANSLATING,
@@ -180,7 +196,9 @@ async def run_pipeline(
                     str(pdf_path),
                     f"Traduzindo {pdf_path.name} com IA…",
                 )
-                translated_html = await translation.translate_html(html_content, mode="translate")
+                translated_html = await translation.translate_html(
+                    html_content, mode="translate", on_block_progress=on_block_progress
+                )
             elif refine_ocr:
                 await emit(
                     PipelineStatus.TRANSLATING,
@@ -188,7 +206,9 @@ async def run_pipeline(
                     str(pdf_path),
                     f"Refinando OCR de {pdf_path.name} com IA…",
                 )
-                translated_html = await translation.translate_html(html_content, mode="refine")
+                translated_html = await translation.translate_html(
+                    html_content, mode="refine", on_block_progress=on_block_progress
+                )
             else:
                 await emit(
                     PipelineStatus.TRANSLATING,

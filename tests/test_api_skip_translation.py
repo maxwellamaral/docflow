@@ -7,7 +7,7 @@ História de Usuário:
   Para economizar recursos de GPU e tempo de processamento quando o PDF já está em português.
 """
 from pathlib import Path
-from unittest.mock import AsyncMock, patch, MagicMock
+from unittest.mock import AsyncMock, patch, MagicMock, ANY
 import pytest
 from fastapi.testclient import TestClient
 
@@ -74,7 +74,8 @@ async def test_run_pipeline_refines_ocr_instead_of_translating(tmp_path: Path) -
     assert job.status == PipelineStatus.COMPLETED
     MockTranslation.return_value.translate_html.assert_called_once_with(
         "<html><body>Original Content</body></html>",
-        mode="refine"
+        mode="refine",
+        on_block_progress=ANY
     )
 
     # As exportações (html_to_docx e html_to_pdf) devem ter sido chamadas com o conteúdo refinado

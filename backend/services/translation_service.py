@@ -1,4 +1,5 @@
-"""Tradução de conteúdo HTML via Ollama com modelo translategemma:4b."""
+import inspect
+from typing import Callable, Awaitable
 import httpx
 from bs4 import BeautifulSoup
 
@@ -92,7 +93,12 @@ class TranslationService:
         data = response.json()
         return data.get("response", text).strip()
 
-    async def translate_html(self, html_content: str, mode: str = "translate") -> str:
+    async def translate_html(
+        self,
+        html_content: str,
+        mode: str = "translate",
+        on_block_progress: Callable[[int, int], None] | Callable[[int, int], Awaitable[None]] | None = None,
+    ) -> str:
         """Processa o conteúdo textual de um HTML via Ollama preservando a estrutura.
 
         Para cada elemento das tags definidas em _TRANSLATABLE_TAGS, o texto
@@ -102,19 +108,27 @@ class TranslationService:
         Args:
             html_content: Conteúdo HTML de entrada.
             mode: Modo de processamento ("translate" ou "refine").
+            on_block_progress: Callback para reportar progresso (atual, total).
 
         Returns:
             HTML com o texto processado para o idioma alvo ou refinado.
         """
         soup = BeautifulSoup(html_content, "html.parser")
-        elements = soup.find_all(list(_TRANSLATABLE_TAGS))
+        all_elements = soup.find_all(list(_TRANSLATABLE_TAGS))
+        # Filtra elementos válidos (não-vazios) para contagem de progresso linear
+        elements = [el for el in all_elements if el.get_text().strip()]
+        total_blocks = len(elements)
 
         async with httpx.AsyncClient() as client:
-            for element in elements:
+            for idx, element in enumerate(elements):
                 original_text = element.get_text()
-                if not original_text.strip():
-                    continue
                 processed = await self._process_text(original_text, client, mode=mode)
                 element.string = processed
+
+                if on_block_progress:
+                    if inspect.iscoroutinefunction(on_block_progress):
+                        await on_block_progress(idx + 1, total_blocks)
+                    else:
+                        on_block_progress(idx + 1, total_blocks)
 
         return str(soup)

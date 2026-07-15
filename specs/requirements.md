@@ -27,8 +27,9 @@
     * O backend deve instruir o Docling a habilitar a extração estruturada de imagens durante o OCR.
     * As figuras extraídas devem ser salvas como arquivos de imagem (PNG) na pasta `./output/<data>/assets/`.
     * O HTML gerado deve referenciar essas imagens localmente via tags `<img>` e o gerador de arquivos Word (.docx) e PDF final deve embuti-las de volta no documento.
-12. O sistema deve suportar um modo de Refinamento de OCR por IA (Ollama):
-    * Caso o checkbox de refinar esteja ativo, o backend deve invocar o modelo local do Ollama com um prompt de sistema especializado em corrigir erros de acentuação, caracteres inválidos/espúrios, quebras de linhas órfãs e concatenações semânticas ruins, mantendo o idioma original e citações científicas intactas.
+13. O sistema deve prover feedback visual do progresso de processamento da IA (Ollama) em tempo real:
+    * O backend deve contar os blocos de texto a serem traduzidos/refinados em cada arquivo.
+    * Conforme o Ollama processa cada bloco, um progresso dinâmico de blocos (ex: "bloco 4/25") deve ser enviado via WebSocket e refletido no Logs Panel.
 
 
 ## Requisitos Não Funcionais
