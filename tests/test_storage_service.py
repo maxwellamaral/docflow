@@ -21,7 +21,7 @@ def test_create_job_dirs_creates_expected_structure(tmp_path: Path) -> None:
 
     dirs = service.create_job_dirs(today)
 
-    assert set(dirs.keys()) == {"html", "translated", "docx", "pdf"}
+    assert set(dirs.keys()) == {"html", "translated", "docx", "pdf", "markdown"}
     for subdir in dirs.values():
         assert subdir.exists()
         assert subdir.is_dir()

@@ -42,13 +42,13 @@ interface OutputItem {
 const GROUPS = [
   { key: 'html', label: 'HTML Original', icon: '🌐' },
   { key: 'translated', label: 'HTML Traduzido', icon: '🌍' },
+  { key: 'markdown', label: 'Markdown (.md)', icon: '📝' },
   { key: 'docx', label: 'Word (.docx)', icon: '📝' },
   { key: 'pdf', label: 'PDF', icon: '📕' },
 ]
 
 const groupedOutputs = computed(() => {
   const items: OutputItem[] = store.outputs.map((fullPath) => {
-    // fullPath é absoluto no servidor — extrai a parte relativa a ./output/
     const parts = fullPath.replace(/\\/g, '/').split('output/')
     const relative: string = parts.length > 1 && parts[1] != null
       ? parts[1]
@@ -58,6 +58,8 @@ const groupedOutputs = computed(() => {
       ? 'html'
       : relative.includes('/translated/')
       ? 'translated'
+      : relative.includes('/markdown/')
+      ? 'markdown'
       : relative.includes('/docx/')
       ? 'docx'
       : relative.includes('/pdf/')

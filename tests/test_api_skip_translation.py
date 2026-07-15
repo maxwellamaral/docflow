@@ -38,7 +38,7 @@ async def test_run_pipeline_refines_ocr_instead_of_translating(tmp_path: Path) -
     async def capture(event):
         events.append(event)
 
-    job_dirs = {k: tmp_path / k for k in ("html", "translated", "docx", "pdf")}
+    job_dirs = {k: tmp_path / k for k in ("html", "translated", "docx", "pdf", "markdown")}
     for d in job_dirs.values():
         d.mkdir(parents=True, exist_ok=True)
 

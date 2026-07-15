@@ -23,6 +23,7 @@ const fileIconMap: Record<string, string> = {
   pdf: '📕',
   docx: '📘',
   html: '🌐',
+  md: '📝',
 }
 
 function fileIcon(name: string): string {

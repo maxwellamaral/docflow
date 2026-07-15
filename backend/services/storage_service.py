@@ -40,6 +40,7 @@ class StorageService:
             "translated": base / "translated",
             "docx": base / "docx",
             "pdf": base / "pdf",
+            "markdown": base / "markdown",
         }
         for path in dirs.values():
             path.mkdir(parents=True, exist_ok=True)

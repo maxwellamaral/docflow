@@ -64,6 +64,7 @@ async def test_pipeline_emits_progress_events_for_each_stage(tmp_path: Path) -> 
         "translated": tmp_path / "translated",
         "docx": tmp_path / "docx",
         "pdf": tmp_path / "pdf",
+        "markdown": tmp_path / "markdown",
     }
     for d in job_dirs.values():
         d.mkdir(parents=True, exist_ok=True)
@@ -89,6 +90,7 @@ async def test_pipeline_emits_progress_events_for_each_stage(tmp_path: Path) -> 
         )
         MockConversion.return_value.html_to_docx = MagicMock()
         MockConversion.return_value.html_to_pdf = MagicMock()
+        MockConversion.return_value.html_to_markdown = MagicMock()
 
         await pipeline_core.run_pipeline(job.job_id, on_progress=capture)
 
@@ -105,7 +107,7 @@ async def test_pipeline_marks_job_failed_on_error(tmp_path: Path) -> None:
     pdf_path = tmp_path / "doc.pdf"
     pdf_path.write_bytes(b"%PDF test")
 
-    job_dirs = {k: tmp_path / k for k in ("html", "translated", "docx", "pdf")}
+    job_dirs = {k: tmp_path / k for k in ("html", "translated", "docx", "pdf", "markdown")}
     for d in job_dirs.values():
         d.mkdir()
 

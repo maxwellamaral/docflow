@@ -78,3 +78,28 @@ def test_html_to_pdf_starts_with_pdf_header(tmp_path: Path) -> None:
     ConversionService().html_to_pdf(SAMPLE_HTML, output)
 
     assert output.read_bytes()[:4] == b"%PDF"
+
+
+def test_html_to_markdown_creates_file(tmp_path: Path) -> None:
+    """Deve criar o arquivo .md no caminho especificado."""
+    output = tmp_path / "output.md"
+
+    ConversionService().html_to_markdown(SAMPLE_HTML, output)
+
+    assert output.exists()
+    assert output.stat().st_size > 0
+
+
+def test_html_to_markdown_produces_valid_markdown(tmp_path: Path) -> None:
+    """O arquivo gerado deve conter a marcação markdown correspondente aos elementos HTML."""
+    output = tmp_path / "output.md"
+
+    ConversionService().html_to_markdown(SAMPLE_HTML, output)
+    content = output.read_text(encoding="utf-8")
+
+    assert "# Título do Documento" in content
+    assert "## Introdução" in content
+    assert "### Métodos" in content
+    assert "- Item 1 da lista" in content
+    assert "- Item 2 da lista" in content
+    assert "Este é um parágrafo" in content

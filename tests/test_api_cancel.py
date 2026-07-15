@@ -57,7 +57,7 @@ async def test_pipeline_stops_cooperatively_on_cancelled_status(tmp_path: Path) 
     async def capture(event):
         events.append(event)
 
-    job_dirs = {k: tmp_path / k for k in ("html", "translated", "docx", "pdf")}
+    job_dirs = {k: tmp_path / k for k in ("html", "translated", "docx", "pdf", "markdown")}
     for d in job_dirs.values():
         d.mkdir(parents=True, exist_ok=True)
 
@@ -105,7 +105,7 @@ async def test_pipeline_raises_pipeline_cancelled_error_and_stops_immediately(tm
     async def capture(event):
         events.append(event)
 
-    job_dirs = {k: tmp_path / k for k in ("html", "translated", "docx", "pdf")}
+    job_dirs = {k: tmp_path / k for k in ("html", "translated", "docx", "pdf", "markdown")}
     for d in job_dirs.values():
         d.mkdir(parents=True, exist_ok=True)
 

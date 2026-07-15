@@ -238,12 +238,16 @@ async def run_pipeline(
             pdf_out_path = storage.get_output_path(job_dirs, "pdf", stem, ".pdf")
             conversion.html_to_pdf(translated_html, pdf_out_path)
 
+            md_out_path = storage.get_output_path(job_dirs, "markdown", stem, ".md")
+            conversion.html_to_markdown(translated_html, md_out_path)
+
             job.outputs.extend(
                 [
                     str(html_path),
                     str(translated_path),
                     str(docx_path),
                     str(pdf_out_path),
+                    str(md_out_path),
                 ]
             )
 
