@@ -3,7 +3,7 @@
 > Pipeline local de conversão, tradução e exportação de documentos PDF via [Docling](https://github.com/DS4SD/docling) + [Ollama](https://ollama.com).
 
 **Autor:** Maxwell Anderson Ielpo Amaral  
-**Versão:** 0.1.0  
+**Versão:** 0.2.0  
 **Licença:** Livre com Citação Obrigatória — veja [LICENSE](LICENSE)
 
 ---
@@ -13,9 +13,11 @@
 - Upload de PDFs via interface web
 - Conversão de PDF → HTML estruturado com figuras embutidas (Docling Server via Docker + GPU)
 - Tradução automática HTML → Português (Brasil) com o modelo `translategemma:4b` via Ollama (GPU local)
-- Exportação dos documentos traduzidos para `.docx` e `.pdf`
-- Gerenciamento de arquivos de entrada e saída pela interface
-- Monitoramento de progresso em tempo real via WebSocket
+- Refinamento de OCR com IA para correção de ortografia, pontuação e acentuação no mesmo idioma
+- Exportação dos documentos para formatos `.docx`, `.pdf` e `.md` (Markdown)
+- Gerenciamento de arquivos de entrada e saída pela interface com fluxo de exclusão segura
+- Interface com alternador de temas Claro (Light Mode) e Escuro (Dark Mode)
+- Monitoramento de progresso em tempo real (incluindo progresso de blocos de IA) via WebSocket
 - Execução completa (backend + frontend) com um único comando: `uv run docflow`
 
 ---
@@ -96,7 +98,7 @@ docflow/
 │   │   └── api/client.ts           ← axios wrapper
 │   └── package.json
 │
-├── tests/                          ← pytest (47 testes)
+├── tests/                          ← pytest (60 testes)
 │   ├── conftest.py
 │   ├── test_pipeline.py
 │   ├── test_storage_service.py
@@ -106,7 +108,11 @@ docflow/
 │   ├── test_api_upload.py
 │   ├── test_api_pipeline.py
 │   ├── test_api_download.py
-│   └── test_api_files.py
+│   ├── test_api_files.py
+│   ├── test_api_cancel.py
+│   ├── test_api_skip_translation.py
+│   ├── test_api_ollama_progress.py
+│   └── test_e2e_logs_panel.py
 │
 ├── specs/                          ← especificações do projeto
 │   ├── requirements.md
@@ -118,6 +124,7 @@ docflow/
     └── YYYY-MM-DD/
         ├── html/
         ├── translated/
+        ├── markdown/
         ├── docx/
         └── pdf/
 ```
@@ -232,12 +239,12 @@ Abra o navegador em **http://localhost:5173**.
 ### Fluxo de uso
 
 1. **📤 Envio de PDFs** — arraste ou selecione PDFs no painel "Envio de PDFs"
-2. **⚙️ Pipeline** — clique em "▶ Iniciar Pipeline" para processar:
+2. **⚙️ Pipeline** — configure opções de IA ("Traduzir Documentos" e/ou "Refinar OCR com IA") e clique em "▶ Iniciar Pipeline":
    - PDF → HTML (Docling)
-   - HTML → HTML traduzido (Ollama `translategemma:4b`)
-   - HTML → `.docx` e `.pdf`
-3. **⬇️ Downloads** — baixe os arquivos gerados na aba correspondente
-4. **🗂 Gerenciar Arquivos** — gerencie os arquivos de entrada e saída
+   - HTML → HTML traduzido/refinado (Ollama `translategemma:4b` ou modelo local)
+   - HTML → `.docx`, `.pdf` e `.md` (Markdown)
+3. **⬇️ Downloads** — baixe os arquivos estruturados nos formatos gerados
+4. **🗂 Gerenciar Arquivos** — gerencie e exclua arquivos com segurança e suporte a duplo clique reativo
 
 ### Acessar apenas a API
 
@@ -294,7 +301,7 @@ Se você utilizar este software em pesquisas, publicações ou trabalhos acadêm
   title        = {{DocFlow}: Pipeline local de conversão, tradução e
                   exportação de documentos {PDF} via Docling e Ollama},
   year         = {2026},
-  version      = {0.1.0},
+  version      = {0.2.0},
   url          = {https://github.com/maxwellamaral/docflow},
   note         = {Software de código aberto sob Licença Livre com
                   Citação Obrigatória}
