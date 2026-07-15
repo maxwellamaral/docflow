@@ -44,7 +44,8 @@ class PipelineJob(BaseModel):
 class PipelineStartRequest(BaseModel):
     """Parâmetros de configuração de inicialização da pipeline."""
 
-    skip_translation: bool = False
+    translate: bool = True
+    refine_ocr: bool = True
 
 
 class PipelineStartResponse(BaseModel):

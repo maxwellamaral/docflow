@@ -37,24 +37,38 @@ class TranslationService:
         self.timeout = timeout
         self._endpoint = f"{self.base_url}/api/generate"
 
-    async def _translate_text(self, text: str, client: httpx.AsyncClient) -> str:
-        """Traduz um trecho de texto via Ollama.
+    async def _process_text(self, text: str, client: httpx.AsyncClient, mode: str = "translate") -> str:
+        """Processa um trecho de texto via Ollama (traduzindo ou refinando o OCR).
 
         Args:
-            text: Texto a ser traduzido.
+            text: Texto a ser processado.
             client: Instância reutilizável de httpx.AsyncClient.
+            mode: Modo de processamento ("translate" ou "refine").
 
         Returns:
-            Texto traduzido.
+            Texto processado.
 
         Raises:
             TranslationError: Se Ollama retornar erro ou for inacessível.
         """
-        prompt = (
-            f"Translate the following text to {self.target_language}. "
-            "Return only the translation, no explanations or extra content.\n\n"
-            f"{text}"
-        )
+        if mode == "refine":
+            prompt = (
+                "You are an academic OCR post-processing assistant. "
+                "Your task is to correct scanning noises, fix missing Portuguese/English accents, "
+                "remove spurious/orphan characters (like isolated letters 'a', '1', 'c' inserted by mistake), "
+                "and merge incorrect line breaks in the text. "
+                "Maintain the original language (Portuguese/English), tone, scientific meaning, "
+                "and preserve all author names and citations exactly as they are. "
+                "Return ONLY the cleaned and corrected text, with no explanations or extra content.\n\n"
+                f"{text}"
+            )
+        else:
+            prompt = (
+                f"Translate the following text to {self.target_language}. "
+                "Return only the translation, no explanations or extra content.\n\n"
+                f"{text}"
+            )
+
         payload = {
             "model": self.model,
             "prompt": prompt,
@@ -78,18 +92,19 @@ class TranslationService:
         data = response.json()
         return data.get("response", text).strip()
 
-    async def translate_html(self, html_content: str) -> str:
-        """Traduz o conteúdo textual de um HTML preservando a estrutura.
+    async def translate_html(self, html_content: str, mode: str = "translate") -> str:
+        """Processa o conteúdo textual de um HTML via Ollama preservando a estrutura.
 
         Para cada elemento das tags definidas em _TRANSLATABLE_TAGS, o texto
-        é extraído, traduzido individualmente via Ollama e reinserido no HTML.
+        é extraído, traduzido ou refinado individualmente via Ollama e reinserido no HTML.
         Elementos vazios são ignorados.
 
         Args:
-            html_content: Conteúdo HTML a ser traduzido.
+            html_content: Conteúdo HTML de entrada.
+            mode: Modo de processamento ("translate" ou "refine").
 
         Returns:
-            HTML com o texto traduzido para o idioma alvo.
+            HTML com o texto processado para o idioma alvo ou refinado.
         """
         soup = BeautifulSoup(html_content, "html.parser")
         elements = soup.find_all(list(_TRANSLATABLE_TAGS))
@@ -99,7 +114,7 @@ class TranslationService:
                 original_text = element.get_text()
                 if not original_text.strip():
                     continue
-                translated = await self._translate_text(original_text, client)
-                element.string = translated
+                processed = await self._process_text(original_text, client, mode=mode)
+                element.string = processed
 
         return str(soup)

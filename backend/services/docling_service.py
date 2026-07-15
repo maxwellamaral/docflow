@@ -14,6 +14,7 @@ from pypdf import PdfReader, PdfWriter
 from docling.document_converter import DocumentConverter, PdfFormatOption
 from docling.datamodel.pipeline_options import PdfPipelineOptions
 from docling.datamodel.base_models import InputFormat
+from docling_core.types.doc import ImageRefMode
 
 from backend.core.config import settings
 
@@ -36,6 +37,8 @@ class DoclingService:
         # Configura as opções do pipeline do Docling
         pipeline_options = PdfPipelineOptions()
         pipeline_options.do_ocr = True
+        pipeline_options.generate_picture_images = True
+        pipeline_options.images_scale = 2.0
 
         self.converter = DocumentConverter(
             format_options={
@@ -103,7 +106,7 @@ class DoclingService:
 
                 # Roda a conversão em thread separada para não travar o loop de eventos
                 result = await asyncio.to_thread(self.converter.convert, tmp_path)
-                page_html = result.document.export_to_html()
+                page_html = result.document.export_to_html(image_mode=ImageRefMode.EMBEDDED)
 
                 # Extrai o conteúdo do body e opcionalmente o head da primeira página
                 soup = BeautifulSoup(page_html, "html.parser")

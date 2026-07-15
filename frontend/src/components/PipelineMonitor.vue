@@ -2,15 +2,24 @@
   <section class="panel">
     <h2>⚙️ Pipeline</h2>
 
-    <div class="skip-translation-checkbox" style="margin: 0 0 1rem 0;">
+    <div class="skip-translation-checkbox" style="margin: 0 0 1rem 0; display: flex; flex-direction: column; gap: 0.5rem;">
       <label style="display: inline-flex; align-items: center; cursor: pointer; color: #f8fafc; font-size: 0.9rem;">
         <input
           type="checkbox"
-          v-model="store.skipTranslation"
+          v-model="store.translate"
           :disabled="store.isRunning"
           style="margin-right: 0.5rem; width: 16px; height: 16px; cursor: pointer;"
         />
-        Pular tradução (apenas converter e reformatar)
+        Traduzir Documentos
+      </label>
+      <label style="display: inline-flex; align-items: center; cursor: pointer; color: #f8fafc; font-size: 0.9rem;">
+        <input
+          type="checkbox"
+          v-model="store.refineOcr"
+          :disabled="store.isRunning"
+          style="margin-right: 0.5rem; width: 16px; height: 16px; cursor: pointer;"
+        />
+        Refinar OCR com IA (Correção Gramatical)
       </label>
     </div>
 

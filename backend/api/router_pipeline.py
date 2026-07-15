@@ -54,7 +54,8 @@ async def start_pipeline(
         pipeline_core.run_pipeline,
         job.job_id,
         _broadcast_progress,
-        request.skip_translation,
+        request.translate,
+        request.refine_ocr,
     )
     return PipelineStartResponse(
         job_id=job.job_id,

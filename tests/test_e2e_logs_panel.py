@@ -163,9 +163,9 @@ def test_pipeline_can_be_cancelled_via_button(page: Page) -> None:
 
 
 def test_pipeline_skip_translation_checkbox(page: Page) -> None:
-    """Deve verificar o comportamento do checkbox de pular tradução com base nos idiomas e sua integração com a API."""
+    """Deve verificar o comportamento dos checkboxes de traduzir e refinar OCR com base nos idiomas."""
     # 1. Configura mock das chamadas de API antes de navegar
-    # Intercepta GET /pipeline/config para retornar idiomas idênticos (deve iniciar marcado!)
+    # Intercepta GET /pipeline/config para retornar idiomas idênticos (deve iniciar com translate=False!)
     page.route("**/pipeline/config", lambda route: route.fulfill(
         status=200,
         json={"source_language": "Portuguese", "target_language": "Portuguese"}
@@ -183,19 +183,24 @@ def test_pipeline_skip_translation_checkbox(page: Page) -> None:
 
     page.goto("http://localhost:5173")
 
-    # 2. O checkbox deve estar visível
-    checkbox = page.locator(".panel input[type='checkbox']")
-    expect(checkbox).to_be_visible()
+    # 2. Ambos os checkboxes devem estar visíveis
+    checkbox_translate = page.locator("label:has-text('Traduzir Documentos') input[type='checkbox']")
+    checkbox_refine = page.locator("label:has-text('Refinar OCR com IA') input[type='checkbox']")
 
-    # 3. Como os idiomas retornados no config mock são iguais, o checkbox deve iniciar MARCADO
-    expect(checkbox).to_be_checked()
+    expect(checkbox_translate).to_be_visible()
+    expect(checkbox_refine).to_be_visible()
+
+    # 3. Como os idiomas retornados no config mock são iguais, 'Traduzir' deve estar desmarcado e 'Refinar' marcado
+    expect(checkbox_translate).not_to_be_checked()
+    expect(checkbox_refine).to_be_checked()
 
     # 4. Inicia o pipeline
     start_button = page.locator("button:has-text('Iniciar Pipeline')")
     expect(start_button).to_be_visible()
     start_button.click()
 
-    # 5. Verifica se o body do POST continha skip_translation = True
+    # 5. Verifica se o body do POST continha translate=False e refine_ocr=True
     page.wait_for_timeout(500)  # Pequena folga para a chamada assíncrona resolver
     assert len(start_payloads) > 0
-    assert start_payloads[0].get("skip_translation") is True
+    assert start_payloads[0].get("translate") is False
+    assert start_payloads[0].get("refine_ocr") is True

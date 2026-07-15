@@ -1,10 +1,12 @@
 """Conversão de HTML para os formatos Word (.docx) e PDF."""
+import io
+import base64
 from pathlib import Path
 
 import weasyprint
 from bs4 import BeautifulSoup
 from docx import Document
-from docx.oxml.ns import qn
+from docx.shared import Inches
 
 
 class ConversionService:
@@ -13,8 +15,8 @@ class ConversionService:
     def html_to_docx(self, html_content: str, output_path: Path) -> Path:
         """Converte um HTML para formato Word (.docx).
 
-        Extrai headings, parágrafos e itens de lista do HTML e os mapeia
-        para os estilos correspondentes do python-docx.
+        Extrai headings, parágrafos, imagens e itens de lista do HTML e os
+        mapeia para os estilos correspondentes do python-docx.
 
         Args:
             html_content: Conteúdo HTML de entrada.
@@ -26,7 +28,18 @@ class ConversionService:
         soup = BeautifulSoup(html_content, "html.parser")
         doc = Document()
 
-        for element in soup.find_all(["h1", "h2", "h3", "h4", "h5", "h6", "p", "li"]):
+        for element in soup.find_all(["h1", "h2", "h3", "h4", "h5", "h6", "p", "li", "img"]):
+            if element.name == "img":
+                src = element.get("src", "")
+                if src.startswith("data:image/"):
+                    try:
+                        header, encoded = src.split(",", 1)
+                        img_bytes = base64.b64decode(encoded)
+                        doc.add_picture(io.BytesIO(img_bytes), width=Inches(5))
+                    except Exception:
+                        pass
+                continue
+
             text = element.get_text(strip=True)
             if not text:
                 continue

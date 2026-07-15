@@ -13,7 +13,8 @@ export interface PipelineStartResponse {
 }
 
 export interface PipelineStartRequest {
-  skip_translation?: boolean
+  translate?: boolean
+  refine_ocr?: boolean
 }
 
 export interface PipelineConfig {

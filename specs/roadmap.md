@@ -116,14 +116,26 @@
 
 ---
 
-## Fase 7 — Opção de Pular Tradução (atual)
+## Fase 7 — Opção de Pular Tradução
 
-- [ ] Criar testes unitários e de integração no backend para validar o fluxo do pipeline sem a etapa de tradução
-- [ ] Criar teste E2E no frontend que verifique se o checkbox "Pular Tradução" vem marcado por padrão se os idiomas forem iguais e se pula a etapa ao rodar
-- [ ] Expor as configurações de idioma do `.env` em um novo endpoint do backend (ex: `GET /pipeline/config`)
-- [ ] Atualizar o endpoint `POST /pipeline/start` para receber um parâmetro opcional (ex: JSON body com `skip_translation: bool`)
-- [ ] Adaptar o loop do `run_pipeline` no backend para saltar a chamada do `translation_service` caso o parâmetro seja verdadeiro e marcar o status da etapa correspondente na store/WS
-- [ ] Adicionar o checkbox "Pular Tradução" no frontend (`PipelineMonitor.vue`) e integrar seu estado na chamada de início do pipeline na store
+- [x] Criar testes unitários e de integração no backend para validar o fluxo do pipeline sem a etapa de tradução
+- [x] Criar teste E2E no frontend que verifique se o checkbox "Pular Tradução" vem marcado por padrão se os idiomas forem iguais e se pula a etapa ao rodar
+- [x] Expor as configurações de idioma do `.env` em um novo endpoint do backend (ex: `GET /pipeline/config`)
+- [x] Atualizar o endpoint `POST /pipeline/start` para receber um parâmetro opcional (ex: JSON body com `skip_translation: bool`)
+- [x] Adaptar o loop do `run_pipeline` no backend para saltar a chamada do `translation_service` caso o parâmetro seja verdadeiro e marcar o status da etapa correspondente na store/WS
+- [x] Adicionar o checkbox "Pular Tradução" no frontend (`PipelineMonitor.vue`) e integrar seu estado na chamada de início do pipeline na store
+
+---
+
+## Fase 8 — Refinamento de OCR e Extração de Figuras (atual)
+
+- [ ] Criar testes unitários no backend para validar a extração de imagens pelo Docling e a rota de refinamento do OCR no TranslationService
+- [ ] Criar testes E2E no frontend que validem a exibição dos novos checkboxes de Traduzir e Refinar OCR na UI
+- [ ] Configurar o `docling_service.py` para extrair figuras (`generate_pictures=True`) e gravá-las no subdiretório de assets do job
+- [ ] Atualizar a classe `TranslationService` para suportar o método `refine_ocr_html` utilizando um prompt otimizado de LLM no Ollama
+- [ ] Adaptar o loop de `pipeline.py` para chamar a correção de OCR se a tradução for ignorada mas o refinamento estiver ativo, e salvar os caminhos das figuras no HTML final
+- [ ] Atualizar o frontend para expor os controles detalhados de tradução e refinamento, integrando-os na chamada de início de job
+
 
 
 

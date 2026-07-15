@@ -1,5 +1,5 @@
 """
-Testes para a funcionalidade de pular tradução na pipeline.
+Testes para a funcionalidade de pular tradução e refinar OCR na pipeline.
 
 História de Usuário:
   Como operador de processamento de documentos em português,
@@ -7,7 +7,7 @@ História de Usuário:
   Para economizar recursos de GPU e tempo de processamento quando o PDF já está em português.
 """
 from pathlib import Path
-from unittest.mock import AsyncMock, patch
+from unittest.mock import AsyncMock, patch, MagicMock
 import pytest
 from fastapi.testclient import TestClient
 
@@ -28,8 +28,8 @@ def test_get_pipeline_config_returns_languages() -> None:
 
 
 @pytest.mark.asyncio
-async def test_run_pipeline_skips_translation_cooperatively(tmp_path: Path) -> None:
-    """Quando skip_translation for True, o run_pipeline não deve chamar a tradução."""
+async def test_run_pipeline_refines_ocr_instead_of_translating(tmp_path: Path) -> None:
+    """Quando translate=False e refine_ocr=True, a tradução é pulada e o refinamento é chamado."""
     job = pipeline_core.create_job()
     pdf_path = tmp_path / "doc.pdf"
     pdf_path.write_bytes(b"%PDF-1.4 test")
@@ -58,15 +58,43 @@ async def test_run_pipeline_skips_translation_cooperatively(tmp_path: Path) -> N
         MockDocling.return_value.convert_pdf_to_html = AsyncMock(
             return_value=b"<html><body>Original Content</body></html>"
         )
+        MockTranslation.return_value.translate_html = AsyncMock(
+            return_value="<html><body>Refined Content</body></html>"
+        )
 
-        # Executa a pipeline passando skip_translation=True
-        await pipeline_core.run_pipeline(job.job_id, on_progress=capture, skip_translation=True)
+        # Executa a pipeline passando translate=False e refine_ocr=True
+        await pipeline_core.run_pipeline(
+            job.job_id,
+            on_progress=capture,
+            translate=False,
+            refine_ocr=True
+        )
 
-    # O status final do job deve ser COMPLETED e o TranslationService não deve ter sido invocado
+    # O status final do job deve ser COMPLETED e o TranslationService deve ter sido chamado com mode="refine"
     assert job.status == PipelineStatus.COMPLETED
-    assert MockTranslation.return_value.translate_html.call_count == 0
+    MockTranslation.return_value.translate_html.assert_called_once_with(
+        "<html><body>Original Content</body></html>",
+        mode="refine"
+    )
 
-    # As exportações (html_to_docx e html_to_pdf) devem ter sido chamadas com o conteúdo original
+    # As exportações (html_to_docx e html_to_pdf) devem ter sido chamadas com o conteúdo refinado
     MockConversion.return_value.html_to_docx.assert_called_once()
     args, _ = MockConversion.return_value.html_to_docx.call_args
-    assert "Original Content" in args[0]
+    assert "Refined Content" in args[0]
+
+
+def test_html_to_docx_embeds_base64_images(tmp_path: Path) -> None:
+    """O ConversionService deve embutir imagens base64 encontradas no HTML no arquivo .docx."""
+    from backend.services.conversion_service import ConversionService
+
+    html = '<html><body><h1>Titulo</h1><img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg=="></body></html>'
+    docx_path = tmp_path / "output.docx"
+
+    service = ConversionService()
+
+    with patch("backend.services.conversion_service.Document") as MockDoc:
+        mock_doc_instance = MockDoc.return_value
+        service.html_to_docx(html, docx_path)
+
+        # add_picture deve ter sido chamada com os bytes decodificados da imagem base64
+        mock_doc_instance.add_picture.assert_called_once()
