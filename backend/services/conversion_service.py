@@ -81,8 +81,9 @@ class ConversionService:
     def html_to_markdown(self, html_content: str, output_path: Path) -> Path:
         """Converte um HTML para formato Markdown (.md).
 
-        Navega pelo DOM do HTML e gera o Markdown equivalente preservando
-        headings, parágrafos, ênfases, listas, links e imagens.
+        Navega pelo DOM do HTML e gera o Markdown equivalente, extraindo
+        imagens Base64 para uma pasta física 'images' ao lado do arquivo .md,
+        referenciando-as com caminhos relativos.
 
         Args:
             html_content: Conteúdo HTML de entrada.
@@ -92,6 +93,15 @@ class ConversionService:
             Caminho do arquivo .md gerado.
         """
         soup = BeautifulSoup(html_content, "html.parser")
+
+        # Cria a pasta 'images' dentro da pasta de destino do markdown
+        markdown_dir = output_path.parent
+        images_dir = markdown_dir / "images"
+        images_dir.mkdir(parents=True, exist_ok=True)
+
+        # Nome base para evitar colisão de imagens de múltiplos arquivos convertidos
+        file_stem = output_path.stem
+        img_counter = [0]  # Usamos uma lista mutável para atuar como contador no escopo aninhado
 
         def _parse_element(element, is_nested=False) -> str:
             if element.name is None:
@@ -149,6 +159,28 @@ class ConversionService:
             elif name == "img":
                 alt = element.get("alt", "imagem")
                 src = element.get("src", "")
+
+                # Se for imagem inline Base64, decodifica e salva em arquivo físico
+                if src.startswith("data:image/"):
+                    try:
+                        mime_header, encoded_data = src.split(",", 1)
+                        ext = "png"
+                        if "image/" in mime_header:
+                            parts = mime_header.split(";")[0].split("/")
+                            if len(parts) > 1:
+                                ext = parts[1]
+
+                        img_bytes = base64.b64decode(encoded_data)
+                        img_counter[0] += 1
+
+                        image_filename = f"{file_stem}_img_{img_counter[0]}.{ext}"
+                        image_file_path = images_dir / image_filename
+                        image_file_path.write_bytes(img_bytes)
+
+                        return f"\n\n![{alt}](./images/{image_filename})\n\n"
+                    except Exception:
+                        pass
+
                 return f"\n\n![{alt}]({src})\n\n"
             elif name == "br":
                 return "\n"

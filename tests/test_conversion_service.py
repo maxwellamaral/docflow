@@ -103,3 +103,33 @@ def test_html_to_markdown_produces_valid_markdown(tmp_path: Path) -> None:
     assert "- Item 1 da lista" in content
     assert "- Item 2 da lista" in content
     assert "Este é um parágrafo" in content
+
+
+def test_html_to_markdown_extracts_base64_images(tmp_path: Path) -> None:
+    """Deve extrair imagens Base64 inline para arquivos físicos na pasta 'images'."""
+    # Um HTML com uma tag img contendo imagem inline em Base64 (pequena imagem PNG válida de 1 pixel)
+    base64_img = (
+        "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk"
+        "+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg=="
+    )
+    html_with_img = f'<html><body><p>Texto antes</p><img alt="Figura Teste" src="{base64_img}" /><p>Texto depois</p></body></html>'
+
+    output = tmp_path / "artigo.md"
+    ConversionService().html_to_markdown(html_with_img, output)
+
+    # 1. O arquivo markdown deve existir
+    assert output.exists()
+    content = output.read_text(encoding="utf-8")
+
+    # 2. A referência da imagem no markdown deve ser relativa e apontar para ./images/artigo_img_1.png
+    assert "![Figura Teste](./images/artigo_img_1.png)" in content
+
+    # 3. A pasta 'images' deve ter sido criada ao lado do markdown
+    images_dir = tmp_path / "images"
+    assert images_dir.exists()
+    assert images_dir.is_dir()
+
+    # 4. A imagem física deve ter sido gravada no disco
+    target_img = images_dir / "artigo_img_1.png"
+    assert target_img.exists()
+    assert target_img.stat().st_size > 0
